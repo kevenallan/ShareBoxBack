@@ -1,14 +1,15 @@
 package br.com.sharebox.controller;
 
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.sharebox.model.TokenModel;
 import br.com.sharebox.model.UsuarioModel;
-import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.UsuarioService;
 
 @RestController
@@ -17,22 +18,35 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
-
-	@Autowired
-    private AuthService authService;
-
-	@PostMapping("/login")
-	private UsuarioModel login(@RequestBody UsuarioModel usuarioModel) {
-		UsuarioModel usuarioLogado = this.usuarioService.login(usuarioModel.getLogin(), usuarioModel.getSenha());
-		if (usuarioLogado != null) {
-			String token = authService.gerarToken(usuarioLogado.getLogin(), usuarioLogado.getSenha());
-			TokenModel tokenModel = new TokenModel();
-			tokenModel.setValue(token);
-			tokenModel.setIsValid(true);
-			usuarioLogado.setToken(tokenModel);
-		}
-//		this.authService.pegarUsuarioESenhaDoToken(token);
-		return usuarioLogado;
-	}
 	
+	@GetMapping("/")
+    public void teste() {
+		try {
+			UsuarioModel usuario = new UsuarioModel();
+			usuario.setNome("Dev");
+			usuario.setUsuario("dev");
+			usuario.setSenha("dev");
+			this.usuarioService.cadastrar(usuario);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+	
+	@PostMapping("/login")
+    public UsuarioModel login(@RequestBody UsuarioModel usuarioModel) {
+		try {
+			return this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+    }
 }

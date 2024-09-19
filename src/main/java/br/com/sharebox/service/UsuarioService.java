@@ -1,5 +1,7 @@
 package br.com.sharebox.service;
 
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,8 +13,13 @@ public class UsuarioService {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+
+    public void cadastrar(UsuarioModel usuario) throws InterruptedException, ExecutionException {
+       this.usuarioRepository.cadastrar(usuario);
+    }
+
+    public UsuarioModel login(String usuario, String senha) throws InterruptedException, ExecutionException {
+    	return this.usuarioRepository.login(usuario, senha);
+    }
 	
-	public UsuarioModel login(String login, String senha) {
-		return this.usuarioRepository.finbByLoginAndSenha(login, senha);
-	}
 }

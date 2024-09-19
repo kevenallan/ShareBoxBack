@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### FIREBASE ###
+src/main/resources/firebase-sharebox-config.json

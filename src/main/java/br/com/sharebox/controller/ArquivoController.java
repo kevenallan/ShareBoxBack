@@ -1,6 +1,9 @@
 package br.com.sharebox.controller;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
@@ -9,11 +12,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.service.ArquivoService;
@@ -24,25 +27,27 @@ public class ArquivoController {
 
 	@Autowired
 	private ArquivoService arquivoService;
-	
+
 	@GetMapping("/listar")
-	private List<ArquivoModel> listar(){
-		return this.arquivoService.listar();
+	public List<ArquivoModel> listar(@RequestParam("usuario") String usuario) throws FileNotFoundException, IOException{
+		return this.arquivoService.listar(usuario);
 	}
 	
 	@PostMapping("/upload")
-	private void upload(@RequestBody ArquivoModel arquivoModel) {
-		System.out.println("upload back");
-		this.arquivoService.upload(arquivoModel);
-	}
-	
-	@GetMapping("/download/{fileId}")
-	public ResponseEntity<byte[]> downloadFile(@PathVariable Long fileId) {
-		ArquivoModel arquivo = this.arquivoService.getArquivoById(fileId);
-	    byte[] fileData = arquivo.getArquivo();
+    public void uploadFile(@RequestParam("file") MultipartFile file,
+            @RequestParam("nome") String nomeArquivo,
+            @RequestParam("usuario") String usuario) throws InterruptedException, ExecutionException {
+		this.arquivoService.upload(file, nomeArquivo, usuario);
+    }
+
+	@GetMapping("/download")
+	public ResponseEntity<byte[]> downloadFile(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException {
+
+		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 	    headers.setContentDisposition(ContentDisposition.builder("attachment").filename("arquivo.jpg").build());
-	    return new ResponseEntity<>(fileData, headers, HttpStatus.OK);
+	    return new ResponseEntity<>(arquivo, headers, HttpStatus.OK);
 	}
+
 }
