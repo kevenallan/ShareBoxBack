@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.sharebox.dto.LoginDTO;
 import br.com.sharebox.model.UsuarioModel;
+import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.UsuarioService;
 
 @RestController
@@ -18,6 +20,9 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
+	
+	@Autowired
+	private AuthService authService;
 	
 	@GetMapping("/")
     public void teste() {
@@ -37,9 +42,16 @@ public class UsuarioController {
     }
 	
 	@PostMapping("/login")
-    public UsuarioModel login(@RequestBody UsuarioModel usuarioModel) {
+    public LoginDTO login(@RequestBody UsuarioModel usuarioModel) {
 		try {
-			return this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+			UsuarioModel usuarioModelLogado =  this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+			LoginDTO loginDTO = new LoginDTO();
+			if (usuarioModelLogado != null) {
+				loginDTO.setUsuarioModel(usuarioModelLogado);
+				loginDTO.setToken(this.authService.gerarToken(usuarioModelLogado.getUsuario(), usuarioModelLogado.getSenha()));				
+			}
+			return loginDTO;
+			
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
