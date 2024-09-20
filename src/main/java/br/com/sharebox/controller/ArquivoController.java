@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,10 +51,15 @@ public class ArquivoController {
 	    return new ResponseEntity<>(arquivo, headers, HttpStatus.OK);
 	}
 	
-	@GetMapping("/buscar-arquivo")
+	@GetMapping("/buscar")
 	public byte[] buscarArquivo(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException {
 		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
 		return arquivo;	
+	}
+	
+	@DeleteMapping("/deletar")
+	public void deletar(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
+		this.arquivoService.deletar(nomeArquivo, usuario);
 	}
 
 }
