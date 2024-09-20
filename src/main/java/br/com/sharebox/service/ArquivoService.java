@@ -75,7 +75,11 @@ public class ArquivoService {
 	public byte[] getArquivo(String nomeArquivo, String login) throws FileNotFoundException, IOException {
 		Storage storage = this.firebaseService.initStorage();
 		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(), login + "/" + nomeArquivo ));
-		return blob.getContent();
+		if(blob != null) {
+			return blob.getContent();
+		}	
+		return null;
+		
 	}
 	
 

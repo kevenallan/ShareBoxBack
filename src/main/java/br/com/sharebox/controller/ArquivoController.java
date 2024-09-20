@@ -49,5 +49,11 @@ public class ArquivoController {
 	    headers.setContentDisposition(ContentDisposition.builder("attachment").filename("arquivo.jpg").build());
 	    return new ResponseEntity<>(arquivo, headers, HttpStatus.OK);
 	}
+	
+	@GetMapping("/buscar-arquivo")
+	public byte[] buscarArquivo(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException {
+		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
+		return arquivo;	
+	}
 
 }
