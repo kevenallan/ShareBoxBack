@@ -60,7 +60,7 @@ public class FirebaseService {
             double totalSizeGB = totalSize / (1024.0 * 1024.0 * 1024.0); // 1 GB = 1024^3 bytes
             
             System.out.println("Total Size (bytes): " + totalSize);
-            System.out.printf("Total Size: %.10f GB\n", totalSizeGB);
+            System.out.printf("Total Size: %.2f GB\n", totalSizeGB);
         } else {
             System.out.println("Bucket not found.");
         }

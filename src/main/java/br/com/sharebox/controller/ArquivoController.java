@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.service.ArquivoService;
+import br.com.sharebox.service.FirebaseService;
 
 @RestController
 @RequestMapping("/arquivo")
@@ -28,9 +29,13 @@ public class ArquivoController {
 
 	@Autowired
 	private ArquivoService arquivoService;
+	
+	@Autowired
+	private FirebaseService firebaseService;
 
 	@GetMapping("/listar")
 	public List<ArquivoModel> listar(@RequestParam("usuario") String usuario) throws FileNotFoundException, IOException{
+		this.firebaseService.getCapacidadeStorage();
 		return this.arquivoService.listar(usuario);
 	}
 	
@@ -47,7 +52,7 @@ public class ArquivoController {
 		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-	    headers.setContentDisposition(ContentDisposition.builder("attachment").filename("arquivo.jpg").build());
+	    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(nomeArquivo).build());
 	    return new ResponseEntity<>(arquivo, headers, HttpStatus.OK);
 	}
 	

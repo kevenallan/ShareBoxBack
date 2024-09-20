@@ -12,6 +12,7 @@ public class ArquivoModel {
 	private String nome;
 	private byte[] arquivo;
 	private MultipartFile file;
+	private String base64;
 	private String extensao;
 	private Long tamanho;
 	private LocalDateTime dataCriacao;
