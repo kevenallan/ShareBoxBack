@@ -47,9 +47,9 @@ public class ArquivoRepository extends Repository {
         	ArquivoModel arquivo = new ArquivoModel();
         	arquivo.setNome(blob.getName().split("/")[1].split("\\.")[0]);
         	
-//        	arquivo.setExtensao(blob.getContentType());
         	arquivo.setExtensao(blob.getName().split("/")[1].split("\\.")[1]);
-        	
+        	arquivo.setMimeType(blob.getContentType());
+
         	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
         	
         	// Converte o arquivo para Base64
