@@ -11,11 +11,10 @@ public class ArquivoModel {
 	
 	private String nome;
 	private MultipartFile file;
-	private String base64;
 	private String extensao;
 	private String mimeType;
-	private Long tamanho;
+	private String tamanho;
+	private String base64;
 	private LocalDateTime dataCriacao;
-	private LocalDateTime dataUltimaModificacao;
 
 }

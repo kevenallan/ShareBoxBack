@@ -50,8 +50,11 @@ public class ArquivoRepository extends Repository {
         	arquivo.setExtensao(blob.getName().split("/")[1].split("\\.")[1]);
         	arquivo.setMimeType(blob.getContentType());
 
-        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
+        	String tamanhoFormatado = formatarTamanhoArquivo(blob.getSize());
+        	arquivo.setTamanho(tamanhoFormatado);
         	
+        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
+
         	// Converte o arquivo para Base64
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             blob.downloadTo(outputStream);
@@ -64,6 +67,18 @@ public class ArquivoRepository extends Repository {
 
         return arquivoList;
     }
+	
+	public String formatarTamanhoArquivo(long tamanhoEmBytes) {
+	    if (tamanhoEmBytes < 1024) {
+	        return tamanhoEmBytes + " B";
+	    } else if (tamanhoEmBytes < 1024 * 1024) {
+	        return (tamanhoEmBytes / 1024) + " KB";
+	    } else if (tamanhoEmBytes < 1024 * 1024 * 1024) {
+	        return (tamanhoEmBytes / (1024 * 1024)) + " MB";
+	    } else {
+	        return (tamanhoEmBytes / (1024 * 1024 * 1024)) + " GB";
+	    }
+	}
 	
 	@SuppressWarnings("deprecation")
 	public void upload(MultipartFile file, String nomeArquivo, String usuario) throws InterruptedException, ExecutionException {
