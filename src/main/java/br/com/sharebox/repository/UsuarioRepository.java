@@ -11,7 +11,6 @@ import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
 
 import br.com.sharebox.model.UsuarioModel;
 
@@ -21,7 +20,7 @@ public class UsuarioRepository extends Repository {
 	private final String COLLECTION_USUARIO = "USUARIO"; 
 	
     // Método para salvar um usuário no Firestore
-    public String cadastrar(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
+    public void cadastrar(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
         // Obtenha a instância do Firestore
         Firestore db = getConectionFirestoreDataBase();
 
@@ -29,10 +28,11 @@ public class UsuarioRepository extends Repository {
         DocumentReference docRef = db.collection(COLLECTION_USUARIO).document(usuarioModel.getUsuario());
 
         // Insira os dados do objeto no Firestore
-        ApiFuture<WriteResult> result = docRef.set(usuarioModel);
+//        ApiFuture<WriteResult> result = docRef.set(usuarioModel);
+        docRef.set(usuarioModel);
 
         // Retorna a hora em que o documento foi atualizado
-        return result.get().getUpdateTime().toString();
+//        return result.get().getUpdateTime().toString();
     }
 	
     public UsuarioModel login(String usuario, String senha) throws InterruptedException, ExecutionException {

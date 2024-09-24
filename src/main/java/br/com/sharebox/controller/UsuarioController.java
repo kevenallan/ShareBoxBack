@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.sharebox.dto.LoginDTO;
 import br.com.sharebox.model.UsuarioModel;
-import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.UsuarioService;
 
 @RestController
@@ -20,18 +19,11 @@ public class UsuarioController {
 
 	@Autowired
 	private UsuarioService usuarioService;
-	
-	@Autowired
-	private AuthService authService;
-	
-	@GetMapping("/")
-    public void teste() {
+
+	@GetMapping("/cadastrar")
+    public void cadastrar(@RequestBody UsuarioModel usuarioModel) {
 		try {
-			UsuarioModel usuario = new UsuarioModel();
-			usuario.setNome("Dev");
-			usuario.setUsuario("dev");
-			usuario.setSenha("dev");
-			this.usuarioService.cadastrar(usuario);
+			this.usuarioService.cadastrar(usuarioModel);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -42,23 +34,7 @@ public class UsuarioController {
     }
 	
 	@PostMapping("/login")
-    public LoginDTO login(@RequestBody UsuarioModel usuarioModel) {
-		try {
-			UsuarioModel usuarioModelLogado =  this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
-			LoginDTO loginDTO = new LoginDTO();
-			if (usuarioModelLogado != null) {
-				loginDTO.setUsuarioModel(usuarioModelLogado);
-				loginDTO.setToken(this.authService.gerarToken(usuarioModelLogado.getUsuario(), usuarioModelLogado.getSenha()));				
-			}
-			return loginDTO;
-			
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
+    public LoginDTO login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
+		return this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
     }
 }
