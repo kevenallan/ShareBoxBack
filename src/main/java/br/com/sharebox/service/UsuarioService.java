@@ -20,6 +20,7 @@ public class UsuarioService {
 
     public LoginDTO cadastrar(UsuarioModel usuario) throws InterruptedException, ExecutionException {
         this.usuarioRepository.cadastrar(usuario);
+       
         LoginDTO login = this.login(usuario.getUsuario(), usuario.getSenha());
         if (login != null) {
      	   return login;

@@ -20,10 +20,10 @@ public class UsuarioController {
 	@Autowired
 	private UsuarioService usuarioService;
 
-	@GetMapping("/cadastrar")
-    public void cadastrar(@RequestBody UsuarioModel usuarioModel) {
+	@PostMapping("/cadastrar")
+    public LoginDTO cadastrar(@RequestBody UsuarioModel usuarioModel) {
 		try {
-			this.usuarioService.cadastrar(usuarioModel);
+			return this.usuarioService.cadastrar(usuarioModel);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -31,6 +31,8 @@ public class UsuarioController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		return null;
     }
 	
 	@PostMapping("/login")
