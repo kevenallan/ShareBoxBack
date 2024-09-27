@@ -3,6 +3,7 @@ package br.com.sharebox.controller;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ public class UsuarioController {
 	private UsuarioService usuarioService;
 
 	@PostMapping("/cadastrar")
-    public LoginDTO cadastrar(@RequestBody UsuarioModel usuarioModel) {
+    public LoginDTO cadastrar(@RequestBody UsuarioModel usuarioModel) throws Exception {
 		try {
 			return this.usuarioService.cadastrar(usuarioModel);
 		} catch (InterruptedException e) {
@@ -37,6 +38,6 @@ public class UsuarioController {
 	
 	@PostMapping("/login")
     public LoginDTO login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
-		return this.usuarioService.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+		return this.usuarioService.login(usuarioModel);
     }
 }

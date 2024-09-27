@@ -34,16 +34,15 @@ public class ArquivoController {
 	private FirebaseService firebaseService;
 
 	@GetMapping("/listar")
-	public List<ArquivoModel> listar(@RequestParam("usuario") String usuario) throws FileNotFoundException, IOException{
+	public List<ArquivoModel> listar() throws FileNotFoundException, IOException{
 		this.firebaseService.getCapacidadeStorage();
-		return this.arquivoService.listar(usuario);
+		return this.arquivoService.listar();
 	}
 	
 	@PostMapping("/upload")
     public void uploadFile(@RequestParam("file") MultipartFile file,
-            @RequestParam("nome") String nomeArquivo,
-            @RequestParam("usuario") String usuario) throws InterruptedException, ExecutionException {
-		this.arquivoService.upload(file, nomeArquivo, usuario);
+            @RequestParam("nome") String nomeArquivo) throws InterruptedException, ExecutionException {
+		this.arquivoService.upload(file, nomeArquivo);
     }
 
 	@GetMapping("/download")
