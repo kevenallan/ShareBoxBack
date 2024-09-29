@@ -1,8 +1,10 @@
 package br.com.sharebox.service;
 
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,8 +36,9 @@ public class FirebaseService {
     }
 
     public Storage initStorage() throws FileNotFoundException, IOException {
+    	 InputStream firebaseConfigStream = new ByteArrayInputStream(firebaseShareboxConfig.getBytes(StandardCharsets.UTF_8));
 		 return StorageOptions.newBuilder()
-		            .setCredentials(GoogleCredentials.fromStream(new FileInputStream(firebaseShareboxConfig)))
+		            .setCredentials(GoogleCredentials.fromStream(firebaseConfigStream))
 		            .build()
 		            .getService();
     }

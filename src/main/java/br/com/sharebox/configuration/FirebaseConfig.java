@@ -1,15 +1,17 @@
 package br.com.sharebox.configuration;
 
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.FileInputStream;
-import java.io.IOException;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 
 @Configuration
 public class FirebaseConfig {
@@ -19,11 +21,10 @@ public class FirebaseConfig {
 	
 	@Bean
     public FirebaseApp initializeFirebase() throws IOException {
-        FileInputStream serviceAccount =
-                new FileInputStream(firebaseShareboxConfig);
+		 InputStream firebaseConfigStream = new ByteArrayInputStream(firebaseShareboxConfig.getBytes(StandardCharsets.UTF_8));
 
         FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setCredentials(GoogleCredentials.fromStream(firebaseConfigStream))
 //                .setDatabaseUrl("https://<seu-projeto>.firebaseio.com")  // Para Realtime Database
                 //.setDatabaseUrl("https://<seu-projeto>.firestore.googleapis.com")  // Para Firestore
                 .build();
