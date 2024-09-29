@@ -18,30 +18,18 @@ public class UsuarioService {
 	@Autowired
 	private AuthService authService;
 
-    public LoginDTO cadastrar(UsuarioModel usuario) throws Exception {
-        UsuarioModel usuarioCadastrado = this.usuarioRepository.cadastrar(usuario);
-//        if (usuarioCadastrado == null) {
-//        	return null;
-//        }
-
-        LoginDTO login = this.login(usuarioCadastrado);
-        if (login != null) {
-     	   return login;
-        }
-        return null;
-        
+    public UsuarioModel cadastrar(UsuarioModel usuario) throws Exception {
+        return this.usuarioRepository.cadastrar(usuario);
      }
 
     public LoginDTO login(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
 
 		UsuarioModel usuarioLogado =  this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
-		if (usuarioLogado != null) {
-			LoginDTO loginDTO = new LoginDTO();
-			loginDTO.setUsuarioModel(usuarioLogado);
-			loginDTO.setToken(this.authService.gerarToken(usuarioLogado.getId()));				
-			return loginDTO;
-		}
-		return null;
+
+		LoginDTO loginDTO = new LoginDTO();
+		loginDTO.setUsuarioModel(usuarioLogado);
+		loginDTO.setToken(this.authService.gerarToken(usuarioLogado.getId()));				
+		return loginDTO;
     }
     
     public void esqueceuSuaSenha(String email) throws Exception {

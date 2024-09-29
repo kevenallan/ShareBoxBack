@@ -25,18 +25,11 @@ public class UsuarioController {
 	private UsuarioService usuarioService;
 
 	@PostMapping("/cadastrar")
-    public LoginDTO cadastrar(@RequestBody UsuarioModel usuarioModel) throws Exception {
-		try {
-			return this.usuarioService.cadastrar(usuarioModel);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
+    public ResponseEntity<ResponseModel<LoginDTO>> cadastrar(@RequestBody UsuarioModel usuarioModel) throws Exception {
+		UsuarioModel usuarioCadastro = this.usuarioService.cadastrar(usuarioModel);	
+		LoginDTO loginDTO = this.usuarioService.login(usuarioCadastro);
+		ResponseModel<LoginDTO> response = new ResponseModel<LoginDTO>(null, loginDTO);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 	
 	@PostMapping("/login")

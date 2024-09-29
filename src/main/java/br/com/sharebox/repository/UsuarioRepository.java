@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import org.springframework.aop.ThrowsAdvice;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.google.api.core.ApiFuture;
@@ -32,9 +30,7 @@ public class UsuarioRepository extends Repository {
         
     	//VERIFICAR USUARIO E EMAIL
     	this.buscarUsuarioPorUsuarioEEmail(usuarioModel.getUsuario(), usuarioModel.getEmail());
-//    	if (usuarioValido != null) {
-//    		return null;
-//    	}
+
     	// Obtenha a instância do Firestore
         Firestore db = getConectionFirestoreDataBase();
 
@@ -64,7 +60,7 @@ public class UsuarioRepository extends Repository {
             return usuarioCadastrado;
         } else {
             // Se não foi encontrado, lance uma exceção ou retorne null
-            throw new RuntimeException("Falha ao cadastrar o usuário. O documento não foi encontrado.");
+            throw new CustomException("Falha ao cadastrar o usuário.");
         }
     }
 	
@@ -81,21 +77,21 @@ public class UsuarioRepository extends Repository {
         // Obtém os resultados
         List<QueryDocumentSnapshot> documentos = querySnapshot.get().getDocuments();
 
-        // Verifica se encontrou algum documento
-        if (!documentos.isEmpty()) {
-        	QueryDocumentSnapshot documento = documentos.get(0);
-            
-            // Converte o documento para o objeto UsuarioModel
-            UsuarioModel usuarioModel = documento.toObject(UsuarioModel.class);
-            
-            // Define a chave do documento (ID) no UsuarioModel
-            usuarioModel.setId(documento.getId());
-            
-            return usuarioModel;
+        // Verifica se o documento esta vazio
+        if (documentos.isEmpty()) {
+        	throw new CustomException("Usuário ou senha inválido.");
         }
 
-        // Retorna nulo se não encontrou o usuário
-        return null;
+        QueryDocumentSnapshot documento = documentos.get(0);
+        
+        // Converte o documento para o objeto UsuarioModel
+        UsuarioModel usuarioModel = documento.toObject(UsuarioModel.class);
+        
+        // Define a chave do documento (ID) no UsuarioModel
+        usuarioModel.setId(documento.getId());
+        
+        return usuarioModel;
+        
     }
     
     public void buscarUsuarioPorUsuarioEEmail(String usuario, String email) throws Exception {
@@ -112,8 +108,7 @@ public class UsuarioRepository extends Repository {
         
         // Verifica se encontrou algum documento pelo campo "usuario"
         if (!documentosUsuario.isEmpty()) {
-//            return "Usuario já em uso";
-        	 throw new Exception("Usuario já em uso");
+        	 throw new CustomException("Este nome de usuario já está em uso. Tente outro.");
         }
         
         // Consulta pelo campo "email"
@@ -125,7 +120,7 @@ public class UsuarioRepository extends Repository {
 
         // Caso não tenha encontrado pelo "usuario", tenta pelo "email"
         if (!documentosEmail.isEmpty()) {
-        	throw new Exception("Email já em uso");
+        	throw new CustomException("Este e-mail já está em uso. Tente outro.");
         }
     }
     
@@ -142,7 +137,7 @@ public class UsuarioRepository extends Repository {
 
         // Caso não tenha encontrado pelo "usuario", tenta pelo "email"      	
         if (documentosEmail.isEmpty()) {
-        	throw new CustomException("Usuário inválido");
+        	throw new CustomException("E-mail inválido");
             
         }
         QueryDocumentSnapshot documento = documentosEmail.get(0);
