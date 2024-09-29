@@ -18,10 +18,13 @@ public class UsuarioService {
 	@Autowired
 	private AuthService authService;
 
-    public LoginDTO cadastrar(UsuarioModel usuario) throws InterruptedException, ExecutionException {
-        this.usuarioRepository.cadastrar(usuario);
-       
-        LoginDTO login = this.login(usuario.getUsuario(), usuario.getSenha());
+    public LoginDTO cadastrar(UsuarioModel usuario) throws Exception {
+        UsuarioModel usuarioCadastrado = this.usuarioRepository.cadastrar(usuario);
+//        if (usuarioCadastrado == null) {
+//        	return null;
+//        }
+
+        LoginDTO login = this.login(usuarioCadastrado);
         if (login != null) {
      	   return login;
         }
@@ -29,13 +32,13 @@ public class UsuarioService {
         
      }
 
-    public LoginDTO login(String usuario, String senha) throws InterruptedException, ExecutionException {
+    public LoginDTO login(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
 
-		UsuarioModel usuarioModel =  this.usuarioRepository.login(usuario, senha);
-		if (usuarioModel != null) {
+		UsuarioModel usuarioLogado =  this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+		if (usuarioLogado != null) {
 			LoginDTO loginDTO = new LoginDTO();
-			loginDTO.setUsuarioModel(usuarioModel);
-			loginDTO.setToken(this.authService.gerarToken(usuarioModel.getUsuario(), usuarioModel.getSenha()));				
+			loginDTO.setUsuarioModel(usuarioLogado);
+			loginDTO.setToken(this.authService.gerarToken(usuarioLogado.getId()));				
 			return loginDTO;
 		}
 		return null;

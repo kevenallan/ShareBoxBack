@@ -24,6 +24,7 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 
 import br.com.sharebox.model.ArquivoModel;
+import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.FirebaseService;
 
 @Component
@@ -32,14 +33,17 @@ public class ArquivoRepository extends Repository {
 	@Autowired
 	private FirebaseService firebaseService;
 	
-	public List<ArquivoModel> listar(String pathArquivo) throws FileNotFoundException, IOException {
+	@Autowired
+	private AuthService authService;
+	
+	public List<ArquivoModel> listar() throws FileNotFoundException, IOException {
 		List<ArquivoModel> arquivoList = new ArrayList<>();
 		
         Storage storage = this.firebaseService.initStorage();
         Bucket bucket = storage.get(this.firebaseService.getBucketName());
 
         // Lista arquivos dentro da pasta especificada
-        Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(pathArquivo));
+        Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(this.authService.uuidUsuarioLogado));
 
 
         // Itera sobre os arquivos listados na pasta
@@ -81,10 +85,10 @@ public class ArquivoRepository extends Repository {
 	}
 	
 	@SuppressWarnings("deprecation")
-	public void upload(MultipartFile file, String nomeArquivo, String usuario) throws InterruptedException, ExecutionException {
+	public void upload(MultipartFile file, String nomeArquivo) throws InterruptedException, ExecutionException {
 
         try {
-            BlobId blobId = BlobId.of(this.firebaseService.getBucketName(), usuario + "/" + nomeArquivo);
+            BlobId blobId = BlobId.of(this.firebaseService.getBucketName(), this.authService.uuidUsuarioLogado + "/" + nomeArquivo);
             BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                     .setContentType(file.getContentType())
                     .build();

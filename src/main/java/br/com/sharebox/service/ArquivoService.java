@@ -20,12 +20,12 @@ public class ArquivoService {
 	@Autowired
 	private ArquivoRepository arquivoRepository;
 	
-	public List<ArquivoModel> listar(String pathArquivo) throws FileNotFoundException, IOException {
-		return this.arquivoRepository.listar(pathArquivo);
+	public List<ArquivoModel> listar() throws FileNotFoundException, IOException {
+		return this.arquivoRepository.listar();
     }
 	
-	public void upload(MultipartFile file, String nomeArquivo, String usuario) throws InterruptedException, ExecutionException {
-        this.arquivoRepository.upload(file, nomeArquivo, usuario);
+	public void upload(MultipartFile file, String nomeArquivo) throws InterruptedException, ExecutionException {
+        this.arquivoRepository.upload(file, nomeArquivo);
 	}
 	
 	public byte[] getArquivo(String nomeArquivo, String login) throws FileNotFoundException, IOException {

@@ -1,8 +1,12 @@
 package br.com.sharebox.repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.stereotype.Component;
 
 import com.google.api.core.ApiFuture;
@@ -22,15 +26,28 @@ public class UsuarioRepository extends Repository {
 	private final String COLLECTION_USUARIO = "USUARIO"; 
 	
     // Método para salvar um usuário no Firestore
-    public UsuarioModel cadastrar(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
-        // Obtenha a instância do Firestore
+    public UsuarioModel cadastrar(UsuarioModel usuarioModel) throws Exception {
+        
+    	//VERIFICAR USUARIO E EMAIL
+    	this.buscarUsuarioPorUsuarioOuEmail(usuarioModel.getUsuario(), usuarioModel.getEmail());
+//    	if (usuarioValido != null) {
+//    		return null;
+//    	}
+    	// Obtenha a instância do Firestore
         Firestore db = getConectionFirestoreDataBase();
 
         // Gere um ID para o documento (ou use o ID do objeto se existir)
-        DocumentReference docRef = db.collection(COLLECTION_USUARIO).document(usuarioModel.getUsuario());
+        String idDocumento = UUID.randomUUID().toString();
+        DocumentReference docRef = db.collection(COLLECTION_USUARIO).document(idDocumento);
 
+        Map<String, Object> usuarioData = new HashMap<>();
+        usuarioData.put("nome", usuarioModel.getNome());
+        usuarioData.put("email", usuarioModel.getEmail());
+        usuarioData.put("usuario", usuarioModel.getUsuario());
+        usuarioData.put("senha", usuarioModel.getSenha());
+        
         // Insira os dados do objeto no Firestore
-        ApiFuture<WriteResult> result = docRef.set(usuarioModel);
+        ApiFuture<WriteResult> result = docRef.set(usuarioData);
 
         result.get();
         
@@ -40,7 +57,9 @@ public class UsuarioRepository extends Repository {
 
         if (document.exists()) {
             // Se o documento foi encontrado, retorne o usuário
-            return document.toObject(UsuarioModel.class);
+        	UsuarioModel usuarioCadastrado = document.toObject(UsuarioModel.class);
+        	usuarioCadastrado.setId(idDocumento);
+            return usuarioCadastrado;
         } else {
             // Se não foi encontrado, lance uma exceção ou retorne null
             throw new RuntimeException("Falha ao cadastrar o usuário. O documento não foi encontrado.");
@@ -62,12 +81,50 @@ public class UsuarioRepository extends Repository {
 
         // Verifica se encontrou algum documento
         if (!documentos.isEmpty()) {
-            // Converte o primeiro documento encontrado no objeto UsuarioModel
-            return documentos.get(0).toObject(UsuarioModel.class);
+        	QueryDocumentSnapshot documento = documentos.get(0);
+            
+            // Converte o documento para o objeto UsuarioModel
+            UsuarioModel usuarioModel = documento.toObject(UsuarioModel.class);
+            
+            // Define a chave do documento (ID) no UsuarioModel
+            usuarioModel.setId(documento.getId());
+            
+            return usuarioModel;
         }
 
         // Retorna nulo se não encontrou o usuário
         return null;
     }
-	
+    
+    public void buscarUsuarioPorUsuarioOuEmail(String usuario, String email) throws Exception {
+        Firestore dbFirestore = getConectionFirestoreDataBase();
+
+        // Consulta pelo campo "usuario"
+        Query queryUsuario = dbFirestore.collection(COLLECTION_USUARIO).whereEqualTo("usuario", usuario);
+
+        // Executa as consultas em paralelo
+        ApiFuture<QuerySnapshot> futureUsuario = queryUsuario.get();
+        
+        // Obtém os resultados das consultas
+        List<QueryDocumentSnapshot> documentosUsuario = futureUsuario.get().getDocuments();
+        
+        // Verifica se encontrou algum documento pelo campo "usuario"
+        if (!documentosUsuario.isEmpty()) {
+//            return "Usuario já em uso";
+        	 throw new Exception("Usuario já em uso");
+        }
+        
+        // Consulta pelo campo "email"
+        Query queryEmail = dbFirestore.collection(COLLECTION_USUARIO).whereEqualTo("email", email);
+       
+        ApiFuture<QuerySnapshot> futureEmail = queryEmail.get();
+
+        List<QueryDocumentSnapshot> documentosEmail = futureEmail.get().getDocuments();
+
+        // Caso não tenha encontrado pelo "usuario", tenta pelo "email"
+        if (!documentosEmail.isEmpty()) {
+        	throw new Exception("Email já em uso");
+        }
+    }
+
 }
