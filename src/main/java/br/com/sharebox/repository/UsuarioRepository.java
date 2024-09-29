@@ -29,7 +29,7 @@ public class UsuarioRepository extends Repository {
     public UsuarioModel cadastrar(UsuarioModel usuarioModel) throws Exception {
         
     	//VERIFICAR USUARIO E EMAIL
-    	this.buscarUsuarioPorUsuarioOuEmail(usuarioModel.getUsuario(), usuarioModel.getEmail());
+    	this.buscarUsuarioPorUsuarioEEmail(usuarioModel.getUsuario(), usuarioModel.getEmail());
 //    	if (usuarioValido != null) {
 //    		return null;
 //    	}
@@ -96,7 +96,7 @@ public class UsuarioRepository extends Repository {
         return null;
     }
     
-    public void buscarUsuarioPorUsuarioOuEmail(String usuario, String email) throws Exception {
+    public void buscarUsuarioPorUsuarioEEmail(String usuario, String email) throws Exception {
         Firestore dbFirestore = getConectionFirestoreDataBase();
 
         // Consulta pelo campo "usuario"
@@ -125,6 +125,29 @@ public class UsuarioRepository extends Repository {
         if (!documentosEmail.isEmpty()) {
         	throw new Exception("Email já em uso");
         }
+    }
+    
+    public UsuarioModel buscarUsuarioPorEmail(String email) throws InterruptedException, ExecutionException  {
+        Firestore dbFirestore = getConectionFirestoreDataBase();
+        
+        // Consulta pelo campo "email"
+        Query queryEmail = dbFirestore.collection(COLLECTION_USUARIO).whereEqualTo("email", email);
+       
+        ApiFuture<QuerySnapshot> futureEmail = queryEmail.get();
+
+        List<QueryDocumentSnapshot> documentosEmail = futureEmail.get().getDocuments();
+        UsuarioModel usuarioModel = null;
+
+        // Caso não tenha encontrado pelo "usuario", tenta pelo "email"      	
+        if (!documentosEmail.isEmpty()) {
+        	QueryDocumentSnapshot documento = documentosEmail.get(0);
+            
+            // Converte o documento para o objeto UsuarioModel
+            usuarioModel = documento.toObject(UsuarioModel.class);           
+            
+        }
+        return usuarioModel;
+       
     }
 
 }

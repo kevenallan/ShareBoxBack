@@ -43,5 +43,15 @@ public class UsuarioService {
 		}
 		return null;
     }
+    
+    public String esqueceuSuaSenha(String email) throws Exception {
+    	UsuarioModel usuario = this.usuarioRepository.buscarUsuarioPorEmail(email);
+    	
+    	if(usuario != null) {
+    		return "Email enviado. Verifique sua caixa de mensagens";
+    	}
+    	
+    	return "aaaa";
+    }
 	
 }
