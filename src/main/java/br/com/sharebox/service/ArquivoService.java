@@ -28,6 +28,11 @@ public class ArquivoService {
         this.arquivoRepository.upload(file, nomeArquivo);
 	}
 	
+	public void update(MultipartFile file, String nomeArquivo,  String nomeArquivoAntigo) throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
+		this.arquivoRepository.deletar(nomeArquivoAntigo);
+        this.arquivoRepository.upload(file, nomeArquivo);
+	}
+	
 	public byte[] getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
 		Blob blob = this.arquivoRepository.getArquivo(nomeArquivo);
 		if (blob != null) {
