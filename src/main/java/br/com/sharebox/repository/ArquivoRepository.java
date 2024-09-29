@@ -23,6 +23,7 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
 
+import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.FirebaseService;
@@ -99,28 +100,28 @@ public class ArquivoRepository extends Repository {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	throw new CustomException("Erro ao tentar fazer o upload do arquivo. Tente novamente.");
         }
 	}
 	
-	public Blob getArquivo(String nomeArquivo, String login) throws FileNotFoundException, IOException {
+	public Blob getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
 		Storage storage = this.firebaseService.initStorage();
-		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(), login + "/" + nomeArquivo ));
+		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(), this.authService.uuidUsuarioLogado + "/" + nomeArquivo ));
 		return blob;
 	}
 	
-	public void deletar(String pathArquivo) throws FileNotFoundException, IOException {
+	public void deletar(String nomeArquivo) throws FileNotFoundException, IOException {
         // Obtenha o bucket do Storage
 		Storage storage = this.firebaseService.initStorage();
 		Bucket bucket = storage.get(this.firebaseService.getBucketName());
 
+		String pathArquivo = this.authService.uuidUsuarioLogado + "/" + nomeArquivo;
         // Referencie o arquivo e delete
         Blob blob = bucket.get(pathArquivo);
         if (blob != null && blob.exists()) {
             blob.delete();
-            System.out.println("Arquivo excluído com sucesso.");
         } else {
-            System.out.println("Arquivo não encontrado.");
+           throw new CustomException("Arquivo não encontrado.");
         }
     }
 

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import br.com.sharebox.model.ArquivoModel;
+import br.com.sharebox.model.ResponseModel;
 import br.com.sharebox.service.ArquivoService;
 import br.com.sharebox.service.FirebaseService;
 
@@ -34,36 +35,43 @@ public class ArquivoController {
 	private FirebaseService firebaseService;
 
 	@GetMapping("/listar")
-	public List<ArquivoModel> listar() throws FileNotFoundException, IOException{
+	public ResponseEntity<ResponseModel<?>> listar() throws FileNotFoundException, IOException{
 		this.firebaseService.getCapacidadeStorage();
-		return this.arquivoService.listar();
+		List<ArquivoModel> arquivos = this.arquivoService.listar();
+		ResponseModel<?> response = new ResponseModel<>(null, arquivos);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
 	@PostMapping("/upload")
-    public void uploadFile(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file,
             @RequestParam("nome") String nomeArquivo) throws InterruptedException, ExecutionException {
 		this.arquivoService.upload(file, nomeArquivo);
+		return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
+	//PRECISA MUDAR PARA RESPONSEMODEL?
 	@GetMapping("/download")
-	public ResponseEntity<byte[]> downloadFile(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException {
+	public ResponseEntity<byte[]> downloadFile(@RequestParam("nomeArquivo") String nomeArquivo) throws FileNotFoundException, IOException {
 
-		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
+		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo);
 	    HttpHeaders headers = new HttpHeaders();
 	    headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 	    headers.setContentDisposition(ContentDisposition.builder("attachment").filename(nomeArquivo).build());
 	    return new ResponseEntity<>(arquivo, headers, HttpStatus.OK);
 	}
 	
+	//PRECISA MUDAR PARA RESPONSEMODEL?
 	@GetMapping("/buscar")
-	public byte[] buscarArquivo(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException {
-		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo, usuario);
-		return arquivo;	
+	public ResponseEntity<byte[]> buscarArquivo(@RequestParam("nomeArquivo") String nomeArquivo) throws FileNotFoundException, IOException {
+		byte[] arquivo = this.arquivoService.getArquivo(nomeArquivo);
+		return new ResponseEntity<>(arquivo, HttpStatus.OK);	
 	}
 	
 	@DeleteMapping("/deletar")
-	public void deletar(@RequestParam("nomeArquivo") String nomeArquivo, @RequestParam("usuario") String usuario) throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
-		this.arquivoService.deletar(nomeArquivo, usuario);
+	public ResponseEntity<ResponseModel<?>> deletar(@RequestParam("nomeArquivo") String nomeArquivo) throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
+		this.arquivoService.deletar(nomeArquivo);
+		ResponseModel<?> response = new ResponseModel<>("Arquivo deletado com sucesso.", null);
+		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 
 }

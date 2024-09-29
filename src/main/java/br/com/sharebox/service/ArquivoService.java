@@ -28,16 +28,15 @@ public class ArquivoService {
         this.arquivoRepository.upload(file, nomeArquivo);
 	}
 	
-	public byte[] getArquivo(String nomeArquivo, String login) throws FileNotFoundException, IOException {
-		Blob blob = this.arquivoRepository.getArquivo(nomeArquivo, login);
+	public byte[] getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
+		Blob blob = this.arquivoRepository.getArquivo(nomeArquivo);
 		if (blob != null) {
 			return blob.getContent();
 		}
 		return null;
 	}
 	
-	public void deletar(String nomeArquivo, String usuario) throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
-		String pathArquivo = usuario + "/" + nomeArquivo;
-        this.arquivoRepository.deletar(pathArquivo);
+	public void deletar(String nomeArquivo) throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
+        this.arquivoRepository.deletar(nomeArquivo);
 	}
 }
