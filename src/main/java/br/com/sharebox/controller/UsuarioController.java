@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.sharebox.dto.LoginDTO;
+import br.com.sharebox.model.ResponseModel;
 import br.com.sharebox.model.UsuarioModel;
 import br.com.sharebox.service.UsuarioService;
 
@@ -39,13 +40,22 @@ public class UsuarioController {
     }
 	
 	@PostMapping("/login")
-    public LoginDTO login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
-		return this.usuarioService.login(usuarioModel);
+    public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
+		LoginDTO login = this.usuarioService.login(usuarioModel);
+		ResponseModel<LoginDTO> response;
+		if (login != null) {
+			response = new ResponseModel<>(null, login);
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		response = new ResponseModel<>("Login invalido", null);
+		return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 	
 	@GetMapping("/esqueceu-sua-senha")
-    public ResponseEntity<String> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
-		 String mensagem =  this.usuarioService.esqueceuSuaSenha(email);
-		 return new ResponseEntity<>(mensagem, HttpStatus.OK);
+    public ResponseEntity<ResponseModel<?>> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
+		 this.usuarioService.esqueceuSuaSenha(email);
+		 ResponseModel<?> response = new ResponseModel<>("Email enviado. Verifique sua caixa de mensagens", null);
+		 return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

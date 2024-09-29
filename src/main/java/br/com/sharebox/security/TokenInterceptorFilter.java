@@ -31,16 +31,16 @@ public class TokenInterceptorFilter extends OncePerRequestFilter {
         String authorizationHeader = request.getHeader("Authorization");
         String uri = request.getRequestURI();
 
-        // Printar o valor do header no console
-        System.out.println("Header Authorization: " + authorizationHeader);
-        System.out.println("URI: " + uri);
+//        System.out.println("Header Authorization: " + authorizationHeader);
+//        System.out.println("URI: " + uri);
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             String token = authorizationHeader.substring(7); // Remove "Bearer " do token
             try {
-                this.authService.validateToken(token);
+//                this.authService.validateToken(token);
                 String userId = this.authService.extractUserId(token);
                 this.authService.uuidUsuarioLogado = userId;
+                //??????????
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userId, null, null);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

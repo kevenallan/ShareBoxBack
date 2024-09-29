@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.aop.ThrowsAdvice;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.google.api.core.ApiFuture;
@@ -18,6 +19,7 @@ import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
 
+import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.UsuarioModel;
 
 @Component
@@ -127,7 +129,7 @@ public class UsuarioRepository extends Repository {
         }
     }
     
-    public UsuarioModel buscarUsuarioPorEmail(String email) throws InterruptedException, ExecutionException  {
+    public UsuarioModel buscarUsuarioPorEmail(String email) throws Exception  {
         Firestore dbFirestore = getConectionFirestoreDataBase();
         
         // Consulta pelo campo "email"
@@ -139,13 +141,14 @@ public class UsuarioRepository extends Repository {
         UsuarioModel usuarioModel = null;
 
         // Caso não tenha encontrado pelo "usuario", tenta pelo "email"      	
-        if (!documentosEmail.isEmpty()) {
-        	QueryDocumentSnapshot documento = documentosEmail.get(0);
-            
-            // Converte o documento para o objeto UsuarioModel
-            usuarioModel = documento.toObject(UsuarioModel.class);           
+        if (documentosEmail.isEmpty()) {
+        	throw new CustomException("Usuário inválido");
             
         }
+        QueryDocumentSnapshot documento = documentosEmail.get(0);
+        
+        // Converte o documento para o objeto UsuarioModel
+        usuarioModel = documento.toObject(UsuarioModel.class);    
         return usuarioModel;
        
     }
