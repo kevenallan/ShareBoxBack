@@ -147,8 +147,7 @@ public class UsuarioRepository extends Repository {
 
         List<QueryDocumentSnapshot> documentosEmail = futureEmail.get().getDocuments();
         UsuarioModel usuarioModel = null;
-
-        // Caso não tenha encontrado pelo "usuario", tenta pelo "email"      	
+    	
         if (documentosEmail.isEmpty()) {
         	throw new CustomException("E-mail inválido");
             

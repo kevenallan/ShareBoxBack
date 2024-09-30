@@ -17,6 +17,9 @@ public class UsuarioService {
 	
 	@Autowired
 	private AuthService authService;
+	
+	@Autowired
+	private EmailService emailService;
 
     public UsuarioModel cadastrar(UsuarioModel usuario) throws Exception {
         return this.usuarioRepository.cadastrar(usuario);
@@ -33,7 +36,10 @@ public class UsuarioService {
     }
     
     public void esqueceuSuaSenha(String email) throws Exception {
-    	this.usuarioRepository.buscarUsuarioPorEmail(email);
+    	UsuarioModel usuarioEncontrado = this.usuarioRepository.buscarUsuarioPorEmail(email);
+    	if (usuarioEncontrado != null) {
+    		this.emailService.enviarEmail(usuarioEncontrado.getEmail());
+    	}
     }
 	
 }
