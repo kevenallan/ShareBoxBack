@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +50,13 @@ public class UsuarioController {
     public ResponseEntity<ResponseModel<?>> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
 		 this.usuarioService.esqueceuSuaSenha(email);
 		 ResponseModel<?> response = new ResponseModel<>("Email enviado. Verifique sua caixa de mensagens", null);
+		 return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+	
+	@PutMapping("/alterar-senha")
+    public ResponseEntity<ResponseModel<?>> alterarSenha(@RequestParam("novaSenha") String novaSenha, @RequestParam("token") String token) throws Exception {
+		 this.usuarioService.alterarSenha(novaSenha, token);
+		 ResponseModel<?> response = new ResponseModel<>("Senha atualizada com sucesso!", null);
 		 return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

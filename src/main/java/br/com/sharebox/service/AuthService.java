@@ -36,17 +36,28 @@ public class AuthService {
 		
 		return token;
 	 }
+	 
+	 public String gerarTokenRedefinicaoSenha(String uuid) {
+		Algorithm algorithm = Algorithm.HMAC256(secretKey);
+		String token = JWT.create()
+		    .withSubject(uuid)
+			.withIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
+			.withExpiresAt(new Date((new java.util.Date()).getTime() + jwtExpirationMs))
+			.sign(algorithm);
+		
+		return token;
+	 }
 
-	    // Validar token JWT
-	    public DecodedJWT validateToken(String token) throws JWTVerificationException {
-	    	Algorithm algorithm = Algorithm.HMAC256(secretKey);
-	        JWTVerifier verifier = JWT.require(algorithm)
-	                                  .build();
-	        return verifier.verify(token);
-	    }
+	// Validar token JWT
+	public DecodedJWT validateToken(String token) throws JWTVerificationException {
+		Algorithm algorithm = Algorithm.HMAC256(secretKey);
+	    JWTVerifier verifier = JWT.require(algorithm)
+	                              .build();
+	    return verifier.verify(token);
+	}
 
-	    // Extrair o ID do usuário do token
-	    public String extractUserId(String token) {
-	        return validateToken(token).getSubject();
-	    }
+	// Extrair o ID do usuário do token
+	public String extractUserId(String token) {
+	    return validateToken(token).getSubject();
+	}
 }

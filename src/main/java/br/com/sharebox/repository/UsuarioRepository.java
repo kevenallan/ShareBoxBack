@@ -155,9 +155,31 @@ public class UsuarioRepository extends Repository {
         QueryDocumentSnapshot documento = documentosEmail.get(0);
         
         // Converte o documento para o objeto UsuarioModel
-        usuarioModel = documento.toObject(UsuarioModel.class);    
+        usuarioModel = documento.toObject(UsuarioModel.class);
+        usuarioModel.setId(documento.getId());
         return usuarioModel;
        
+    }
+
+    public void atualizarSenha(String idUsuario, String novaSenha) throws Exception {
+        Firestore dbFirestore = getConectionFirestoreDataBase();
+
+        // Obter a referência do documento pelo idUsuario
+        DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(idUsuario);
+
+        // Verificar se o documento existe
+        if (docRef.get().get().exists()) {
+        	String senhaAtual = docRef.get().get().getString("senha");
+        	 if (passwordEncoder.matches(novaSenha, senhaAtual)) {
+                 throw new CustomException("A nova senha não pode ser igual à senha atual.");
+             }
+        	
+            // Atualizar a senha
+            ApiFuture<WriteResult> futureUpdate = docRef.update("senha", passwordEncoder.encode(novaSenha));
+            futureUpdate.get(); // Aguardar a conclusão da atualização
+        } else {
+            throw new CustomException("Erro na atualização da senha.");
+        }
     }
 
 }

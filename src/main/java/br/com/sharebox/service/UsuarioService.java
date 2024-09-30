@@ -5,7 +5,10 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+
 import br.com.sharebox.dto.LoginDTO;
+import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.UsuarioModel;
 import br.com.sharebox.repository.UsuarioRepository;
 
@@ -38,7 +41,17 @@ public class UsuarioService {
     public void esqueceuSuaSenha(String email) throws Exception {
     	UsuarioModel usuarioEncontrado = this.usuarioRepository.buscarUsuarioPorEmail(email);
     	if (usuarioEncontrado != null) {
-    		this.emailService.enviarEmail(usuarioEncontrado.getEmail());
+    		this.emailService.enviarEmail(usuarioEncontrado);
+    	}
+    }
+    
+    public void alterarSenha(String novaSenha, String token) throws Exception {
+    	try {
+    	    String idUsuario = this.authService.extractUserId(token);
+    	    this.usuarioRepository.atualizarSenha(idUsuario, novaSenha);
+    	} catch (JWTVerificationException e) {
+    	    // Tratar erro de verificação, por exemplo, token inválido ou expirado
+    	    throw new CustomException("A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
     	}
     }
 	

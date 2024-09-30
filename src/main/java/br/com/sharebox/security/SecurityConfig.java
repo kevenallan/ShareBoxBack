@@ -141,7 +141,7 @@ public class SecurityConfig {
             }))
             .authorizeHttpRequests(auth -> 
                 auth
-                    .requestMatchers("/usuario/login", "/usuario/cadastrar", "/usuario/esqueceu-sua-senha").permitAll() // Permite acesso sem autenticação
+                    .requestMatchers("/usuario/login", "/usuario/cadastrar", "/usuario/esqueceu-sua-senha", "/usuario/alterar-senha").permitAll() // Permite acesso sem autenticação
                     .anyRequest().authenticated() // Requer autenticação para qualquer outra requisição
             )
             .addFilterBefore(tokenInterceptorFilter, UsernamePasswordAuthenticationFilter.class); // Adiciona o filtro de token
