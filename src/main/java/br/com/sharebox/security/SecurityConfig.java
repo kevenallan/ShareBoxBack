@@ -141,7 +141,7 @@ public class SecurityConfig {
             }))
             .authorizeHttpRequests(auth -> 
                 auth
-                    .requestMatchers("/usuario/login", "/usuario/cadastrar", "/usuario/esqueceu-sua-senha", "/usuario/alterar-senha").permitAll() // Permite acesso sem autenticação
+                .requestMatchers("/usuario/login", "/usuario/cadastrar", "/usuario/esqueceu-sua-senha", "/usuario/alterar-senha").permitAll() // Permite acesso sem autenticação
                     .anyRequest().authenticated() // Requer autenticação para qualquer outra requisição
             )
             .addFilterBefore(tokenInterceptorFilter, UsernamePasswordAuthenticationFilter.class); // Adiciona o filtro de token
@@ -154,21 +154,21 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager(); // Fornece um gerenciador de autenticação
     }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:4200"); // Origem permitida
-        config.addAllowedHeader("*"); // Todos os cabeçalhos são permitidos
-        config.addAllowedMethod("GET"); // Permitir GET
-        config.addAllowedMethod("POST"); // Permitir POST
-        config.addAllowedMethod("PUT"); // Permitir PUT
-        config.addAllowedMethod("DELETE"); // Permitir DELETE
-        config.addAllowedMethod("OPTIONS"); // Permitir OPTIONS
-        source.registerCorsConfiguration("/**", config); // Aplicar para todos os endpoints
-        return new CorsFilter(source);
-    }
+//    @Bean
+//    public CorsFilter corsFilter() {
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        CorsConfiguration config = new CorsConfiguration();
+//        config.setAllowCredentials(true);
+//        config.addAllowedOrigin("http://localhost:4200"); // Origem permitida
+//        config.addAllowedHeader("*"); // Todos os cabeçalhos são permitidos
+//        config.addAllowedMethod("GET"); // Permitir GET
+//        config.addAllowedMethod("POST"); // Permitir POST
+//        config.addAllowedMethod("PUT"); // Permitir PUT
+//        config.addAllowedMethod("DELETE"); // Permitir DELETE
+//        config.addAllowedMethod("OPTIONS"); // Permitir OPTIONS
+//        source.registerCorsConfiguration("/**", config); // Aplicar para todos os endpoints
+//        return new CorsFilter(source);
+//    }
     
     @Bean
     public PasswordEncoder passwordEncoder() {

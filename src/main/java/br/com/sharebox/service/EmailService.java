@@ -20,7 +20,7 @@ public class EmailService {
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setTo(usuario.getEmail());
 		message.setSubject("Redefinição de Senha - ShareBox");
-		String linkRedefinicaoSenha = "http://localhost:4200/cadastro?token=" + this.authService.gerarTokenRedefinicaoSenha(usuario.getId());
+		String linkRedefinicaoSenha = "http://localhost:4200/alterar-sua-senha?token=" + this.authService.gerarTokenRedefinicaoSenha(usuario.getId());
 		StringBuilder conteudoBuilder = new StringBuilder();
 		conteudoBuilder.append("Olá ").append(usuario.getNome()).append(",\n\n")
 		               .append("Recebemos um pedido para redefinir a sua senha da sua conta no ShareBox. ")

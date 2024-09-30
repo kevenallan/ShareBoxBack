@@ -13,15 +13,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 
-import lombok.Data;
-
 @Service
 public class AuthService {
 	
 	@Value("${jwt.secret}")
     private String secretKey; // Configure a chave secreta no application.properties
 	
-	private int jwtExpirationMs = 300000; //5 minutos //3600000 - Expira em 1 hora
+	private int jwtExpirationMs = 3600000; // - Expira em 1 hora
+	private int jwtExpirationRedefinirSenha = 300000; //5 minutos
 	
 	public String uuidUsuarioLogado = "";
 
@@ -42,7 +41,7 @@ public class AuthService {
 		String token = JWT.create()
 		    .withSubject(uuid)
 			.withIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()))
-			.withExpiresAt(new Date((new java.util.Date()).getTime() + jwtExpirationMs))
+			.withExpiresAt(new Date((new java.util.Date()).getTime() + jwtExpirationRedefinirSenha))
 			.sign(algorithm);
 		
 		return token;
