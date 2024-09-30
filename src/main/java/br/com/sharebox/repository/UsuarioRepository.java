@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.google.api.core.ApiFuture;
@@ -23,7 +25,10 @@ import br.com.sharebox.model.UsuarioModel;
 @Component
 public class UsuarioRepository extends Repository {
 	
-	private final String COLLECTION_USUARIO = "USUARIO"; 
+	private final String COLLECTION_USUARIO = "USUARIO";
+	
+	@Autowired
+    private PasswordEncoder passwordEncoder;
 	
     // Método para salvar um usuário no Firestore
     public UsuarioModel cadastrar(UsuarioModel usuarioModel) throws Exception {
@@ -38,11 +43,14 @@ public class UsuarioRepository extends Repository {
         String idDocumento = UUID.randomUUID().toString();
         DocumentReference docRef = db.collection(COLLECTION_USUARIO).document(idDocumento);
 
+        String senhaSemCriptografia = usuarioModel.getSenha();
+        String senhaComCriptografia = passwordEncoder.encode(usuarioModel.getSenha());
+
         Map<String, Object> usuarioData = new HashMap<>();
         usuarioData.put("nome", usuarioModel.getNome());
         usuarioData.put("email", usuarioModel.getEmail());
         usuarioData.put("usuario", usuarioModel.getUsuario());
-        usuarioData.put("senha", usuarioModel.getSenha());
+        usuarioData.put("senha", senhaComCriptografia);
         
         // Insira os dados do objeto no Firestore
         ApiFuture<WriteResult> result = docRef.set(usuarioData);
@@ -57,6 +65,7 @@ public class UsuarioRepository extends Repository {
             // Se o documento foi encontrado, retorne o usuário
         	UsuarioModel usuarioCadastrado = document.toObject(UsuarioModel.class);
         	usuarioCadastrado.setId(idDocumento);
+        	usuarioCadastrado.setSenha(senhaSemCriptografia);
             return usuarioCadastrado;
         } else {
             // Se não foi encontrado, lance uma exceção ou retorne null
@@ -68,8 +77,7 @@ public class UsuarioRepository extends Repository {
     	Firestore db = getConectionFirestoreDataBase();
   
         Query query = db.collection(COLLECTION_USUARIO)
-                        .whereEqualTo("usuario", usuario)
-                        .whereEqualTo("senha", senha);
+                        .whereEqualTo("usuario", usuario);
         
         // Executa a consulta
         ApiFuture<QuerySnapshot> querySnapshot = query.get();
@@ -79,13 +87,18 @@ public class UsuarioRepository extends Repository {
 
         // Verifica se o documento esta vazio
         if (documentos.isEmpty()) {
-        	throw new CustomException("Usuário ou senha inválido.");
+        	throw new CustomException("Usuário inválido.");
         }
 
         QueryDocumentSnapshot documento = documentos.get(0);
         
         // Converte o documento para o objeto UsuarioModel
         UsuarioModel usuarioModel = documento.toObject(UsuarioModel.class);
+        
+        //VALIDAR SENHA CRIPTOGRAFADA
+        if (!passwordEncoder.matches(senha, usuarioModel.getSenha())) {
+            throw new CustomException("Senha inválida.");
+        }
         
         // Define a chave do documento (ID) no UsuarioModel
         usuarioModel.setId(documento.getId());
