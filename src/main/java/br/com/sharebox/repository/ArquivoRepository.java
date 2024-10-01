@@ -77,11 +77,11 @@ public class ArquivoRepository extends Repository {
 	    if (tamanhoEmBytes < 1024) {
 	        return tamanhoEmBytes + " B";
 	    } else if (tamanhoEmBytes < 1024 * 1024) {
-	        return (tamanhoEmBytes / 1024) + " KB";
+	        return String.format("%.1f KB", tamanhoEmBytes / 1024.0);
 	    } else if (tamanhoEmBytes < 1024 * 1024 * 1024) {
-	        return (tamanhoEmBytes / (1024 * 1024)) + " MB";
+	        return String.format("%.1f MB", tamanhoEmBytes / (1024.0 * 1024));
 	    } else {
-	        return (tamanhoEmBytes / (1024 * 1024 * 1024)) + " GB";
+	        return String.format("%.1f GB", tamanhoEmBytes / (1024.0 * 1024 * 1024));
 	    }
 	}
 	
