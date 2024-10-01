@@ -54,5 +54,24 @@ public class UsuarioService {
     	    throw new CustomException("A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
     	}
     }
+    
+    public void atualizarUsuario(UsuarioModel usuarioModel) throws Exception {
+    	try {
+    	    this.usuarioRepository.atualizarUsuario(this.authService.uuidUsuarioLogado, usuarioModel);
+    	} catch (JWTVerificationException e) {
+    	    // Tratar erro de verificação, por exemplo, token inválido ou expirado
+    	    throw new CustomException("A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
+    	}
+    }
+    
+    public UsuarioModel getDadosUsuario() {
+    	try {
+			return this.usuarioRepository.getDadosUsuario(this.authService.uuidUsuarioLogado);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CustomException("Erro ao pegar os dados do usuário logado.");
+		}
+    	
+    }
 	
 }

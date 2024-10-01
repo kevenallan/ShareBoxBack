@@ -63,8 +63,7 @@ public class UsuarioRepository extends Repository {
 
         if (document.exists()) {
             // Se o documento foi encontrado, retorne o usuário
-        	UsuarioModel usuarioCadastrado = document.toObject(UsuarioModel.class);
-        	usuarioCadastrado.setId(idDocumento);
+        	UsuarioModel usuarioCadastrado = getUsuarioModel(document);
         	usuarioCadastrado.setSenha(senhaSemCriptografia);
             return usuarioCadastrado;
         } else {
@@ -93,16 +92,13 @@ public class UsuarioRepository extends Repository {
         QueryDocumentSnapshot documento = documentos.get(0);
         
         // Converte o documento para o objeto UsuarioModel
-        UsuarioModel usuarioModel = documento.toObject(UsuarioModel.class);
+        UsuarioModel usuarioModel = getUsuarioModel(documento);
         
         //VALIDAR SENHA CRIPTOGRAFADA
         if (!passwordEncoder.matches(senha, usuarioModel.getSenha())) {
             throw new CustomException("Senha inválida.");
         }
-        
-        // Define a chave do documento (ID) no UsuarioModel
-        usuarioModel.setId(documento.getId());
-        
+
         return usuarioModel;
         
     }
@@ -146,7 +142,6 @@ public class UsuarioRepository extends Repository {
         ApiFuture<QuerySnapshot> futureEmail = queryEmail.get();
 
         List<QueryDocumentSnapshot> documentosEmail = futureEmail.get().getDocuments();
-        UsuarioModel usuarioModel = null;
     	
         if (documentosEmail.isEmpty()) {
         	throw new CustomException("E-mail inválido");
@@ -154,10 +149,7 @@ public class UsuarioRepository extends Repository {
         }
         QueryDocumentSnapshot documento = documentosEmail.get(0);
         
-        // Converte o documento para o objeto UsuarioModel
-        usuarioModel = documento.toObject(UsuarioModel.class);
-        usuarioModel.setId(documento.getId());
-        return usuarioModel;
+        return getUsuarioModel(documento);
        
     }
 
@@ -168,18 +160,71 @@ public class UsuarioRepository extends Repository {
         DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(idUsuario);
 
         // Verificar se o documento existe
-        if (docRef.get().get().exists()) {
-        	String senhaAtual = docRef.get().get().getString("senha");
-        	 if (passwordEncoder.matches(novaSenha, senhaAtual)) {
-                 throw new CustomException("A nova senha não pode ser igual à senha atual.");
-             }
-        	
+        DocumentSnapshot documentSnapshot = docRef.get().get();
+        if (documentSnapshot.exists()) {
+            String senhaAtual = documentSnapshot.getString("senha");
+            if (passwordEncoder.matches(novaSenha, senhaAtual)) {
+                throw new CustomException("A nova senha não pode ser igual à senha atual.");
+            }
+
             // Atualizar a senha
             ApiFuture<WriteResult> futureUpdate = docRef.update("senha", passwordEncoder.encode(novaSenha));
             futureUpdate.get(); // Aguardar a conclusão da atualização
         } else {
             throw new CustomException("Erro na atualização da senha.");
         }
+    }
+    
+    public UsuarioModel getDadosUsuario(String idUsuario) throws Exception {
+        Firestore dbFirestore = getConectionFirestoreDataBase();
+
+        DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(idUsuario);
+
+        DocumentSnapshot documentSnapshot = docRef.get().get();
+        if (documentSnapshot.exists()) {
+            return getUsuarioModel(documentSnapshot);
+        } else {
+            throw new CustomException("Erro ao buscar os dados do usuário.");
+        }
+    }
+    
+    public void atualizarUsuario(String idUsuario, UsuarioModel usuarioAtualizado) throws Exception {
+        Firestore dbFirestore = getConectionFirestoreDataBase();
+
+        // Obter a referência do documento pelo idUsuario
+        DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(idUsuario);
+
+        // Verificar se o documento existe
+        DocumentSnapshot documentSnapshot = docRef.get().get();
+        if (documentSnapshot.exists()) {
+        	//TODO - PRECISA ATUALIZAR TODOS OS CAMPOS?
+        	String senhaAtual = documentSnapshot.getString("senha");
+        	ApiFuture<WriteResult> futureUpdate = null;
+        	if (passwordEncoder.matches(usuarioAtualizado.getSenha(), senhaAtual) || usuarioAtualizado.getSenha().equals(senhaAtual)) {
+                futureUpdate = docRef.update(
+                		"nome", usuarioAtualizado.getNome(),
+                		"email", usuarioAtualizado.getEmail(),
+                		"usuario", usuarioAtualizado.getUsuario()
+                		);
+            } else {
+            	 futureUpdate = docRef.update(
+                 		"nome", usuarioAtualizado.getNome(),
+                 		"email", usuarioAtualizado.getEmail(),
+                 		"usuario", usuarioAtualizado.getUsuario(),
+                 		"senha", passwordEncoder.encode(usuarioAtualizado.getSenha())
+                 		);
+            }
+    
+            futureUpdate.get(); // Aguardar a conclusão da atualização
+        } else {
+            throw new CustomException("Erro na atualização do usuário.");
+        }
+    }
+    
+    private UsuarioModel getUsuarioModel(DocumentSnapshot documentSnapshot) {
+    	UsuarioModel usuarioModel = documentSnapshot.toObject(UsuarioModel.class);
+        usuarioModel.setId(documentSnapshot.getId());
+        return usuarioModel;
     }
 
 }

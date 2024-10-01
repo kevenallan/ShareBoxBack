@@ -33,6 +33,20 @@ public class UsuarioController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 	
+	@GetMapping("/dados-usuario")
+	public ResponseEntity<ResponseModel<UsuarioModel>> dadosUsuario(){
+		UsuarioModel usuario = this.usuarioService.getDadosUsuario();
+		ResponseModel<UsuarioModel> response = new ResponseModel<>(null, usuario);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@PutMapping("/atualizar-usuario")
+    public ResponseEntity<ResponseModel<?>> atualizarUsuario(@RequestBody UsuarioModel usuarioModel) throws Exception {
+		 this.usuarioService.atualizarUsuario(usuarioModel);
+		 ResponseModel<?> response = new ResponseModel<>("Usuário atualizado com sucesso!", null);
+		 return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+	
 	@PostMapping("/login")
     public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
 		LoginDTO login = this.usuarioService.login(usuarioModel);
