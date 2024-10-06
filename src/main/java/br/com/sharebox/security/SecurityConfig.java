@@ -2,6 +2,7 @@ package br.com.sharebox.security;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,6 +19,9 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 public class SecurityConfig {
 
+	@Value("${cors.allowed-origins}")
+    private String allowedOrigins;
+	
     private final TokenInterceptorFilter tokenInterceptorFilter;
 
     public SecurityConfig(TokenInterceptorFilter tokenInterceptorFilter) {
@@ -30,7 +34,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(request -> {
                 var corsConfiguration = new CorsConfiguration();
-                corsConfiguration.setAllowedOrigins(List.of("https://sharebox-1155c.web.app")); // Permita a origem desejada -- "http://localhost:4200", "http://192.168.0.5:4200", "https://sharebox-1155c.web.app"
+                corsConfiguration.setAllowedOrigins(List.of(allowedOrigins.split(","))); // Permita a origem desejada -- "http://localhost:4200", "http://192.168.0.5:4200", "https://sharebox-1155c.web.app"
                 corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 corsConfiguration.setAllowedHeaders(List.of("*"));
                 corsConfiguration.setAllowCredentials(true);
