@@ -19,7 +19,7 @@ public class AuthService {
 	@Value("${jwt.secret}")
     private String secretKey; // Configure a chave secreta no application.properties
 	
-	private int jwtExpirationMs = 3600000; // - Expira em 1 hora
+	private int jwtExpirationMs = 604800000; //Expira em 1 semana / 3600000 - Expira em 1 hora
 	private int jwtExpirationRedefinirSenha = 300000; //5 minutos
 	
 	public String uuidUsuarioLogado = "";
