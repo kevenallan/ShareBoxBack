@@ -27,9 +27,14 @@ import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.FirebaseService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class ArquivoRepository extends Repository {
+	
+	private static final Logger log = LoggerFactory.getLogger(ArquivoRepository.class);
+
 	
 	@Autowired
 	private FirebaseService firebaseService;
@@ -37,39 +42,48 @@ public class ArquivoRepository extends Repository {
 	@Autowired
 	private AuthService authService;
 	
-	public List<ArquivoModel> listar() throws FileNotFoundException, IOException {
+	public List<ArquivoModel> listar() {
 		List<ArquivoModel> arquivoList = new ArrayList<>();
-		
-        Storage storage = this.firebaseService.initStorage();
-        Bucket bucket = storage.get(this.firebaseService.getBucketName());
+		try {
+			log.info("Iniciando metodo Listar");
+	        Storage storage = this.firebaseService.initStorage();
+	        Bucket bucket = storage.get(this.firebaseService.getBucketName());
 
-        // Lista arquivos dentro da pasta especificada
-        Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(this.authService.uuidUsuarioLogado));
+	        log.info("Iniciando metodo consulta de arquivos...");
+	        // Lista arquivos dentro da pasta especificada
+	        Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(this.authService.uuidUsuarioLogado));
 
+	        log.info("Percorregando lista de arquivos e convertendo em ArquivoModel");
+	        // Itera sobre os arquivos listados na pasta
+	        for (Blob blob : blobs.iterateAll()) {
+	        	ArquivoModel arquivo = new ArquivoModel();
+	        	arquivo.setNome(blob.getName().split("/")[1].split("\\.")[0]);
+	        	
+	        	arquivo.setExtensao(blob.getName().split("/")[1].split("\\.")[1]);
+	        	arquivo.setMimeType(blob.getContentType());
 
-        // Itera sobre os arquivos listados na pasta
-        for (Blob blob : blobs.iterateAll()) {
-        	ArquivoModel arquivo = new ArquivoModel();
-        	arquivo.setNome(blob.getName().split("/")[1].split("\\.")[0]);
-        	
-        	arquivo.setExtensao(blob.getName().split("/")[1].split("\\.")[1]);
-        	arquivo.setMimeType(blob.getContentType());
+	        	String tamanhoFormatado = formatarTamanhoArquivo(blob.getSize());
+	        	arquivo.setTamanho(tamanhoFormatado);
+	        	
+	        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
 
-        	String tamanhoFormatado = formatarTamanhoArquivo(blob.getSize());
-        	arquivo.setTamanho(tamanhoFormatado);
-        	
-        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
-
-        	// Converte o arquivo para Base64
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            blob.downloadTo(outputStream);
-            byte[] fileBytes = outputStream.toByteArray();
-            String base64Encoded = Base64.getEncoder().encodeToString(fileBytes);
-        	arquivo.setBase64(base64Encoded);
-
-        	arquivoList.add(arquivo);
-        }
-
+	        	log.info("Converte o arquivo para Base64");
+	        	// Converte o arquivo para Base64
+	            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	            blob.downloadTo(outputStream);
+	            byte[] fileBytes = outputStream.toByteArray();
+	            String base64Encoded = Base64.getEncoder().encodeToString(fileBytes);
+	        	arquivo.setBase64(base64Encoded);
+	        	log.info("Adicionando o ArquivoModel na lista");
+	        	arquivoList.add(arquivo);
+	        }
+		} catch(Exception ex) {
+			log.error("CATCH");
+			ex.printStackTrace();
+			log.error(ex.getMessage());
+			log.error(ex.toString());
+		}
+		log.info("RETURN");
         return arquivoList;
     }
 	
