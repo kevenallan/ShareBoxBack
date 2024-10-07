@@ -10,10 +10,10 @@ RUN mvn clean install -DskipTests
 FROM openjdk:17-jdk-slim
 
 # Define a variável de ambiente para o profile de produção
-#ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
 
-COPY --from=build /target/sharebox-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /target/sharebox-2.0.0.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
