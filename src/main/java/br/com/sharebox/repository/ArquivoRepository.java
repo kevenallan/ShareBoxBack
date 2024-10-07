@@ -38,7 +38,6 @@ public class ArquivoRepository extends Repository {
 	
 	private static final Logger log = LoggerFactory.getLogger(ArquivoRepository.class);
 
-	
 	@Autowired
 	private FirebaseService firebaseService;
 	
@@ -64,16 +63,8 @@ public class ArquivoRepository extends Repository {
 	        	arquivo.setTamanho(tamanhoFormatado);
 	        	
 	        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
-
-	        	// Converte o arquivo para Base64
-//	            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//	            blob.downloadTo(outputStream);
-//	            byte[] fileBytes = outputStream.toByteArray();
-//	            String base64Encoded = Base64.getEncoder().encodeToString(fileBytes);
-//	        	arquivo.setBase64(base64Encoded);
 	        	
 	        	try (ReadChannel reader = blob.reader()) {
-	        		log.info("Convertendo o Arquivo em BYTE[]");
 	        	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 	        	    WritableByteChannel channel = Channels.newChannel(outputStream);
 	        	    ByteBuffer buffer = ByteBuffer.allocate(64 * 1024);  // 64KB por buffer
@@ -97,7 +88,6 @@ public class ArquivoRepository extends Repository {
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-		log.info("RETURN");
         return arquivoList;
     }
 	
