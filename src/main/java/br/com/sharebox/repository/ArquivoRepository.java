@@ -4,19 +4,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.gax.paging.Page;
+import com.google.cloud.ReadChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -27,8 +32,6 @@ import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.service.AuthService;
 import br.com.sharebox.service.FirebaseService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class ArquivoRepository extends Repository {
@@ -45,16 +48,11 @@ public class ArquivoRepository extends Repository {
 	public List<ArquivoModel> listar() {
 		List<ArquivoModel> arquivoList = new ArrayList<>();
 		try {
-			log.info("Iniciando metodo Listar");
 	        Storage storage = this.firebaseService.initStorage();
 	        Bucket bucket = storage.get(this.firebaseService.getBucketName());
 
-	        log.info("Iniciando metodo consulta de arquivos...");
-	        // Lista arquivos dentro da pasta especificada
 	        Page<Blob> blobs = bucket.list(Storage.BlobListOption.prefix(this.authService.uuidUsuarioLogado));
 
-	        log.info("Percorregando lista de arquivos e convertendo em ArquivoModel");
-	        // Itera sobre os arquivos listados na pasta
 	        for (Blob blob : blobs.iterateAll()) {
 	        	ArquivoModel arquivo = new ArquivoModel();
 	        	arquivo.setNome(blob.getName().split("/")[1].split("\\.")[0]);
@@ -67,21 +65,37 @@ public class ArquivoRepository extends Repository {
 	        	
 	        	arquivo.setDataCriacao(LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
 
-	        	log.info("Converte o arquivo para Base64");
 	        	// Converte o arquivo para Base64
-	            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-	            blob.downloadTo(outputStream);
-	            byte[] fileBytes = outputStream.toByteArray();
-	            String base64Encoded = Base64.getEncoder().encodeToString(fileBytes);
-	        	arquivo.setBase64(base64Encoded);
-	        	log.info("Adicionando o ArquivoModel na lista");
+//	            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//	            blob.downloadTo(outputStream);
+//	            byte[] fileBytes = outputStream.toByteArray();
+//	            String base64Encoded = Base64.getEncoder().encodeToString(fileBytes);
+//	        	arquivo.setBase64(base64Encoded);
+	        	
+	        	try (ReadChannel reader = blob.reader()) {
+	        		log.info("Convertendo o Arquivo em BYTE[]");
+	        	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	        	    WritableByteChannel channel = Channels.newChannel(outputStream);
+	        	    ByteBuffer buffer = ByteBuffer.allocate(64 * 1024);  // 64KB por buffer
+
+	        	    while (reader.read(buffer) > 0) {
+	        	        buffer.flip();
+	        	        channel.write(buffer);
+	        	        buffer.clear();
+	        	    }
+	        	    // Processar os bytes como necessário
+	        	    byte[] fileBytes = outputStream.toByteArray();
+	        	    arquivo.setBytes(fileBytes);
+	        	} catch (Exception e) {
+	        		log.error("----->ERRO AO CONVERTER O ARQUIVO EM BYTE[]");
+	        		e.printStackTrace();
+	        	}
+	        	
+	        	
 	        	arquivoList.add(arquivo);
 	        }
 		} catch(Exception ex) {
-			log.error("CATCH");
 			ex.printStackTrace();
-			log.error(ex.getMessage());
-			log.error(ex.toString());
 		}
 		log.info("RETURN");
         return arquivoList;

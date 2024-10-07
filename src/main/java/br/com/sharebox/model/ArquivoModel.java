@@ -15,6 +15,7 @@ public class ArquivoModel {
 	private String mimeType;
 	private String tamanho;
 	private String base64;
+	private byte[] bytes;
 	private LocalDateTime dataCriacao;
 
 }
