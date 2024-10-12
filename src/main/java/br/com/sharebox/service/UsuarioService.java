@@ -38,6 +38,17 @@ public class UsuarioService {
 		return loginDTO;
     }
     
+    //TODO: Verificar se o email ja existe, se não existir, cadastra
+    public LoginDTO loginGoogle(String uid) throws InterruptedException, ExecutionException {
+
+//		UsuarioModel usuarioLogado =  this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+
+		LoginDTO loginDTO = new LoginDTO();
+		loginDTO.setUsuarioModel(null);
+		loginDTO.setToken(this.authService.gerarToken(uid));				
+		return loginDTO;
+    }
+    
     public void esqueceuSuaSenha(String email) throws Exception {
     	UsuarioModel usuarioEncontrado = this.usuarioRepository.buscarUsuarioPorEmail(email);
     	if (usuarioEncontrado != null) {

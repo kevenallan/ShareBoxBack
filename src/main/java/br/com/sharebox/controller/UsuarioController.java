@@ -60,6 +60,19 @@ public class UsuarioController {
 		return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 	
+	@GetMapping("/login-google")
+    public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestParam String uid) throws InterruptedException, ExecutionException {
+		LoginDTO login = this.usuarioService.loginGoogle(uid);
+		ResponseModel<LoginDTO> response;
+		if (login != null) {
+			response = new ResponseModel<>(null, login);
+			
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		response = new ResponseModel<>("Login invalido", null);
+		return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+	
 	@GetMapping("/esqueceu-sua-senha")
     public ResponseEntity<ResponseModel<?>> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
 		 this.usuarioService.esqueceuSuaSenha(email);
