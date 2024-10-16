@@ -19,20 +19,23 @@ public class ArquivoService {
 
 	@Autowired
 	private ArquivoRepository arquivoRepository;
-	
+
 	public List<ArquivoModel> listar() throws FileNotFoundException, IOException {
 		return this.arquivoRepository.listar();
-    }
-	
-	public void upload(MultipartFile file, String nomeArquivo) throws InterruptedException, ExecutionException {
-        this.arquivoRepository.upload(file, nomeArquivo);
 	}
-	
-	public void update(MultipartFile file, String nomeArquivo,  String nomeArquivoAntigo) throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
+
+	public void upload(MultipartFile[] files) throws InterruptedException, ExecutionException {
+		for (MultipartFile file : files) {
+			this.arquivoRepository.upload(file, file.getOriginalFilename());
+		}
+	}
+
+	public void update(MultipartFile file, String nomeArquivo, String nomeArquivoAntigo)
+			throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
 		this.arquivoRepository.deletar(nomeArquivoAntigo);
-        this.arquivoRepository.upload(file, nomeArquivo);
+		this.arquivoRepository.upload(file, nomeArquivo);
 	}
-	
+
 	public byte[] getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
 		Blob blob = this.arquivoRepository.getArquivo(nomeArquivo);
 		if (blob != null) {
@@ -40,8 +43,9 @@ public class ArquivoService {
 		}
 		return null;
 	}
-	
-	public void deletar(String nomeArquivo) throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
-        this.arquivoRepository.deletar(nomeArquivo);
+
+	public void deletar(String nomeArquivo)
+			throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
+		this.arquivoRepository.deletar(nomeArquivo);
 	}
 }

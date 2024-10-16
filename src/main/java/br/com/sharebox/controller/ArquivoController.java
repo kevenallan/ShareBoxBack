@@ -44,10 +44,10 @@ public class ArquivoController {
 	}
 
 	@PostMapping("/upload")
-	public ResponseEntity<ResponseModel<?>> uploadFile(@RequestParam("file") MultipartFile file,
-			@RequestParam("nome") String nomeArquivo) throws InterruptedException, ExecutionException {
-		this.arquivoService.upload(file, nomeArquivo);
-		return new ResponseEntity<>(new ResponseModel<>("Arquivo adicionado", null), HttpStatus.OK);
+	public ResponseEntity<ResponseModel<?>> uploadFile(@RequestParam("files") MultipartFile[] files)
+			throws InterruptedException, ExecutionException {
+		this.arquivoService.upload(files);
+		return new ResponseEntity<>(new ResponseModel<>("Arquivo(s) adicionado(s)", null), HttpStatus.OK);
 	}
 
 	// PRECISA MUDAR PARA RESPONSEMODEL?
