@@ -54,9 +54,12 @@ public class ArquivoRepository extends Repository {
 
 	        for (Blob blob : blobs.iterateAll()) {
 	        	ArquivoModel arquivo = new ArquivoModel();
-	        	arquivo.setNome(blob.getName().split("/")[1].split("\\.")[0]);
-	        	
-	        	arquivo.setExtensao(blob.getName().split("/")[1].split("\\.")[1]);
+	        	String[] nomeExtensao = blob.getName().split("/")[1].split("\\.");
+	        	int indicePontoExtensao = blob.getName().lastIndexOf(".");
+	        	String nomeArquivo = blob.getName().substring(0, indicePontoExtensao + 1);
+
+	        	arquivo.setNome(nomeArquivo);	
+	        	arquivo.setExtensao(nomeExtensao[nomeExtensao.length - 1]);
 	        	arquivo.setMimeType(blob.getContentType());
 
 	        	String tamanhoFormatado = formatarTamanhoArquivo(blob.getSize());
