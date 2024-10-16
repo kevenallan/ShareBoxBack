@@ -80,11 +80,11 @@ public class ArquivoController {
 	}
 
 	@DeleteMapping("/deletar")
-	public ResponseEntity<ResponseModel<?>> deletar(@RequestParam("nomeArquivo") String nomeArquivo)
+	public ResponseEntity<ResponseModel<?>> deletar(@RequestParam("nomesArquivos") List<String> nomesArquivos)
 			throws FileNotFoundException, IOException, InterruptedException, ExecutionException {
-		this.arquivoService.deletar(nomeArquivo);
-		ResponseModel<?> response = new ResponseModel<>("Arquivo deletado com sucesso.", null);
-		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		this.arquivoService.deletar(nomesArquivos);
+		ResponseModel<?> response = new ResponseModel<>("Arquivo(s) deletado(s) com sucesso.", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

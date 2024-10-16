@@ -44,8 +44,10 @@ public class ArquivoService {
 		return null;
 	}
 
-	public void deletar(String nomeArquivo)
+	public void deletar(List<String> nomesArquivos)
 			throws InterruptedException, ExecutionException, FileNotFoundException, IOException {
-		this.arquivoRepository.deletar(nomeArquivo);
+		for (String nomeArquivo : nomesArquivos) {
+			this.arquivoRepository.deletar(nomeArquivo);
+		}
 	}
 }
