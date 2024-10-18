@@ -5,6 +5,7 @@ import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,13 +61,10 @@ public class UsuarioController {
 			throws InterruptedException, ExecutionException {
 		LoginDTO login = this.usuarioService.login(usuarioModel);
 		ResponseModel<LoginDTO> response;
-		if (login != null) {
-			response = new ResponseModel<>(null, login);
+		response = new ResponseModel<>(null, login);
 
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		}
-		response = new ResponseModel<>("Login invalido", null);
-		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+
 	}
 
 	@PostMapping("/login-google")
@@ -74,13 +72,10 @@ public class UsuarioController {
 			throws Exception {
 		LoginDTO login = this.usuarioService.loginGoogle(usuarioModel);
 		ResponseModel<LoginDTO> response;
-		if (login != null) {
-			response = new ResponseModel<>(null, login);
 
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		}
-		response = new ResponseModel<>("Login invalido", null);
-		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		response = new ResponseModel<>(null, login);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+
 	}
 
 	@GetMapping("/esqueceu-sua-senha")
@@ -95,6 +90,13 @@ public class UsuarioController {
 			@RequestParam("token") String token) throws Exception {
 		this.usuarioService.alterarSenha(novaSenha, token);
 		ResponseModel<?> response = new ResponseModel<>("Senha atualizada com sucesso!", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/deletar")
+	public ResponseEntity<ResponseModel<?>> deletar() throws Exception {
+		this.usuarioService.deletarUsuarioPorId();
+		ResponseModel<?> response = new ResponseModel<>("Usuário deletado com sucesso", null);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

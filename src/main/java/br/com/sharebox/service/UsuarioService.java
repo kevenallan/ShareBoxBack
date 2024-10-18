@@ -1,5 +1,7 @@
 package br.com.sharebox.service;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,9 @@ public class UsuarioService {
 
 	@Autowired
 	private EmailService emailService;
+
+	@Autowired
+	private ArquivoService arquivoService;
 
 	public UsuarioModel cadastrar(UsuarioModel usuario) throws Exception {
 		return this.usuarioRepository.cadastrar(usuario);
@@ -93,6 +98,13 @@ public class UsuarioService {
 			throw new CustomException("Erro ao pegar os dados do usuário logado.");
 		}
 
+	}
+
+	public void deletarUsuarioPorId()
+			throws FileNotFoundException, InterruptedException, ExecutionException, IOException {
+		// DELETAR ARQUIVOS DO USUÁRIO
+		this.usuarioRepository.deletarUsuarioPorId(this.authService.uuidUsuarioLogado);
+		this.arquivoService.deletarPasta(this.authService.uuidUsuarioLogado);
 	}
 
 }

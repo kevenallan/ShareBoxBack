@@ -50,4 +50,8 @@ public class ArquivoService {
 			this.arquivoRepository.deletar(nomeArquivo);
 		}
 	}
+
+	public void deletarPasta(String idUsuario) throws FileNotFoundException, IOException {
+		this.arquivoRepository.deletarPasta(idUsuario);
+	}
 }

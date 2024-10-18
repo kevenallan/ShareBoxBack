@@ -281,6 +281,16 @@ public class UsuarioRepository extends Repository {
 		}
 	}
 
+	public void deletarUsuarioPorId(String documentId) {
+		try {
+			Firestore dbFirestore = getConectionFirestoreDataBase();
+			dbFirestore.collection(COLLECTION_USUARIO).document(documentId).delete().get();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new CustomException("Erro ao tentar deletar o usuário");
+		}
+	}
+
 	private UsuarioModel getUsuarioModel(DocumentSnapshot documentSnapshot) {
 		UsuarioModel usuarioModel = documentSnapshot.toObject(UsuarioModel.class);
 		usuarioModel.setId(documentSnapshot.getId());
