@@ -26,64 +26,75 @@ public class UsuarioController {
 	private UsuarioService usuarioService;
 
 	@PostMapping("/cadastrar")
-    public ResponseEntity<ResponseModel<LoginDTO>> cadastrar(@RequestBody UsuarioModel usuarioModel) throws Exception {
-		UsuarioModel usuarioCadastro = this.usuarioService.cadastrar(usuarioModel);	
+	public ResponseEntity<ResponseModel<LoginDTO>> cadastrar(@RequestBody UsuarioModel usuarioModel) throws Exception {
+		UsuarioModel usuarioCadastro = this.usuarioService.cadastrar(usuarioModel);
 		LoginDTO loginDTO = this.usuarioService.login(usuarioCadastro);
 		ResponseModel<LoginDTO> response = new ResponseModel<LoginDTO>(null, loginDTO);
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-	
+	}
+
 	@GetMapping("/dados-usuario")
-	public ResponseEntity<ResponseModel<UsuarioModel>> dadosUsuario(){
+	public ResponseEntity<ResponseModel<UsuarioModel>> dadosUsuario() {
 		UsuarioModel usuario = this.usuarioService.getDadosUsuario();
 		ResponseModel<UsuarioModel> response = new ResponseModel<>(null, usuario);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@PutMapping("/atualizar-usuario")
-    public ResponseEntity<ResponseModel<?>> atualizarUsuario(@RequestBody UsuarioModel usuarioModel) throws Exception {
-		 this.usuarioService.atualizarUsuario(usuarioModel);
-		 ResponseModel<?> response = new ResponseModel<>("Usuário atualizado com sucesso!", null);
-		 return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-	
+	public ResponseEntity<ResponseModel<?>> atualizarUsuario(@RequestBody UsuarioModel usuarioModel) throws Exception {
+		this.usuarioService.atualizarUsuario(usuarioModel);
+		ResponseModel<?> response = new ResponseModel<>("Usuário atualizado com sucesso!", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PutMapping("/atualizar-usuario-google")
+	public ResponseEntity<ResponseModel<?>> atualizarUsuarioGoogle(@RequestBody UsuarioModel usuarioModel)
+			throws Exception {
+		this.usuarioService.atualizarUsuarioGoogle(usuarioModel);
+		ResponseModel<?> response = new ResponseModel<>("Usuário atualizado com sucesso!", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PostMapping("/login")
-    public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestBody UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
+	public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestBody UsuarioModel usuarioModel)
+			throws InterruptedException, ExecutionException {
 		LoginDTO login = this.usuarioService.login(usuarioModel);
 		ResponseModel<LoginDTO> response;
 		if (login != null) {
 			response = new ResponseModel<>(null, login);
-			
+
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		response = new ResponseModel<>("Login invalido", null);
-		return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-	
-	@GetMapping("/login-google")
-    public ResponseEntity<ResponseModel<LoginDTO>> login(@RequestParam String uid) throws InterruptedException, ExecutionException {
-		LoginDTO login = this.usuarioService.loginGoogle(uid);
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@PostMapping("/login-google")
+	public ResponseEntity<ResponseModel<LoginDTO>> loginGoogle(@RequestBody UsuarioModel usuarioModel)
+			throws Exception {
+		LoginDTO login = this.usuarioService.loginGoogle(usuarioModel);
 		ResponseModel<LoginDTO> response;
 		if (login != null) {
 			response = new ResponseModel<>(null, login);
-			
+
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		response = new ResponseModel<>("Login invalido", null);
-		return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-	
+		return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 	@GetMapping("/esqueceu-sua-senha")
-    public ResponseEntity<ResponseModel<?>> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
-		 this.usuarioService.esqueceuSuaSenha(email);
-		 ResponseModel<?> response = new ResponseModel<>("Email enviado. Verifique sua caixa de mensagens", null);
-		 return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-	
+	public ResponseEntity<ResponseModel<?>> esqueceuSuaSenha(@RequestParam("email") String email) throws Exception {
+		this.usuarioService.esqueceuSuaSenha(email);
+		ResponseModel<?> response = new ResponseModel<>("Email enviado. Verifique sua caixa de mensagens", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PutMapping("/alterar-senha")
-    public ResponseEntity<ResponseModel<?>> alterarSenha(@RequestParam("novaSenha") String novaSenha, @RequestParam("token") String token) throws Exception {
-		 this.usuarioService.alterarSenha(novaSenha, token);
-		 ResponseModel<?> response = new ResponseModel<>("Senha atualizada com sucesso!", null);
-		 return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+	public ResponseEntity<ResponseModel<?>> alterarSenha(@RequestParam("novaSenha") String novaSenha,
+			@RequestParam("token") String token) throws Exception {
+		this.usuarioService.alterarSenha(novaSenha, token);
+		ResponseModel<?> response = new ResponseModel<>("Senha atualizada com sucesso!", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

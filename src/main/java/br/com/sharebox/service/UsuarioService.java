@@ -17,72 +17,82 @@ public class UsuarioService {
 
 	@Autowired
 	private UsuarioRepository usuarioRepository;
-	
+
 	@Autowired
 	private AuthService authService;
-	
+
 	@Autowired
 	private EmailService emailService;
 
-    public UsuarioModel cadastrar(UsuarioModel usuario) throws Exception {
-        return this.usuarioRepository.cadastrar(usuario);
-     }
+	public UsuarioModel cadastrar(UsuarioModel usuario) throws Exception {
+		return this.usuarioRepository.cadastrar(usuario);
+	}
 
-    public LoginDTO login(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
+	public LoginDTO login(UsuarioModel usuarioModel) throws InterruptedException, ExecutionException {
 
-		UsuarioModel usuarioLogado =  this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+		UsuarioModel usuarioLogado = this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
 
 		LoginDTO loginDTO = new LoginDTO();
 		loginDTO.setUsuarioModel(usuarioLogado);
-		loginDTO.setToken(this.authService.gerarToken(usuarioLogado.getId()));				
+		loginDTO.setToken(this.authService.gerarToken(usuarioLogado.getId()));
 		return loginDTO;
-    }
-    
-    //TODO: Verificar se o email ja existe, se não existir, cadastra
-    public LoginDTO loginGoogle(String uid) throws InterruptedException, ExecutionException {
+	}
 
-//		UsuarioModel usuarioLogado =  this.usuarioRepository.login(usuarioModel.getUsuario(), usuarioModel.getSenha());
+	// TODO: Verificar se o email ja existe, se não existir, cadastra
+	public LoginDTO loginGoogle(UsuarioModel usuarioModel) throws Exception {
+
+		UsuarioModel usuarioCadastrado = this.usuarioRepository.buscarUsuarioGooglePorEmail(usuarioModel.getEmail());
+
+		if (usuarioCadastrado == null) {
+			usuarioCadastrado = this.usuarioRepository.cadastrarUsuarioGoogle(usuarioModel);
+		}
+
+		// VALIDA O CASO DE TENTAREM LOGAR COM O GOOGLE UTILIZANDO UM EMAIL QUE JÁ FOI
+		// CADASTRO EM UMA CONTA DO SISTEMA
+		if (usuarioCadastrado != null && !usuarioCadastrado.getId().equals(usuarioModel.getId())) {
+			throw new CustomException("Já existe uma conta utilizando esse e-mail");
+		}
 
 		LoginDTO loginDTO = new LoginDTO();
-		loginDTO.setUsuarioModel(null);
-		loginDTO.setToken(this.authService.gerarToken(uid));				
+		loginDTO.setUsuarioModel(usuarioCadastrado);
+		loginDTO.setToken(this.authService.gerarToken(usuarioModel.getId()));
 		return loginDTO;
-    }
-    
-    public void esqueceuSuaSenha(String email) throws Exception {
-    	UsuarioModel usuarioEncontrado = this.usuarioRepository.buscarUsuarioPorEmail(email);
-    	if (usuarioEncontrado != null) {
-    		this.emailService.enviarEmail(usuarioEncontrado);
-    	}
-    }
-    
-    public void alterarSenha(String novaSenha, String token) throws Exception {
-    	try {
-    	    String idUsuario = this.authService.extractUserId(token);
-    	    this.usuarioRepository.atualizarSenha(idUsuario, novaSenha);
-    	} catch (JWTVerificationException e) {
-    	    // Tratar erro de verificação, por exemplo, token inválido ou expirado
-    	    throw new CustomException("A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
-    	}
-    }
-    
-    public void atualizarUsuario(UsuarioModel usuarioModel) throws Exception {
-    	try {
-    	    this.usuarioRepository.atualizarUsuario(this.authService.uuidUsuarioLogado, usuarioModel);
-    	} catch (JWTVerificationException e) {
-    	    // Tratar erro de verificação, por exemplo, token inválido ou expirado
-    	    throw new CustomException("A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
-    	}
-    }
-    
-    public UsuarioModel getDadosUsuario() {
-    	try {
+	}
+
+	public void esqueceuSuaSenha(String email) throws Exception {
+		UsuarioModel usuarioEncontrado = this.usuarioRepository.buscarUsuarioPorEmail(email);
+		if (usuarioEncontrado != null) {
+			this.emailService.enviarEmail(usuarioEncontrado);
+		}
+	}
+
+	public void alterarSenha(String novaSenha, String token) throws Exception {
+		try {
+			String idUsuario = this.authService.extractUserId(token);
+			this.usuarioRepository.atualizarSenha(idUsuario, novaSenha);
+		} catch (JWTVerificationException e) {
+			// Tratar erro de verificação, por exemplo, token inválido ou expirado
+			throw new CustomException(
+					"A validade desse link expirou. Por favor solicite uma nova redefinição de senha.");
+		}
+	}
+
+	public void atualizarUsuario(UsuarioModel usuarioModel) throws Exception {
+		this.usuarioRepository.atualizarUsuario(this.authService.uuidUsuarioLogado, usuarioModel);
+	}
+
+	public void atualizarUsuarioGoogle(UsuarioModel usuarioModel) throws Exception {
+		this.usuarioRepository.atualizarUsuarioGoogle(this.authService.uuidUsuarioLogado, usuarioModel);
+	}
+
+	public UsuarioModel getDadosUsuario() {
+		try {
 			return this.usuarioRepository.getDadosUsuario(this.authService.uuidUsuarioLogado);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CustomException("Erro ao pegar os dados do usuário logado.");
 		}
-    	
-    }
-	
+
+	}
+
 }
