@@ -23,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.model.ResponseModel;
 import br.com.sharebox.service.ArquivoService;
-import br.com.sharebox.service.FirebaseService;
 
 @RestController
 @RequestMapping("/arquivo")
@@ -32,20 +31,15 @@ public class ArquivoController {
 	@Autowired
 	private ArquivoService arquivoService;
 
-	@Autowired
-	private FirebaseService firebaseService;
-
 	@GetMapping("/listar")
 	public ResponseEntity<ResponseModel<?>> listar() throws FileNotFoundException, IOException {
-		this.firebaseService.getCapacidadeStorage();
 		List<ArquivoModel> arquivos = this.arquivoService.listar();
 		ResponseModel<?> response = new ResponseModel<>(null, arquivos);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	@PostMapping("/upload")
-	public ResponseEntity<ResponseModel<?>> uploadFile(@RequestParam("files") MultipartFile[] files)
-			throws InterruptedException, ExecutionException {
+	public ResponseEntity<ResponseModel<?>> uploadFile(@RequestParam("files") MultipartFile[] files) {
 		this.arquivoService.upload(files);
 		return new ResponseEntity<>(new ResponseModel<>("Arquivo(s) adicionado(s)", null), HttpStatus.OK);
 	}
