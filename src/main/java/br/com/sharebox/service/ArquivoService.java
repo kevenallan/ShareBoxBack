@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.cloud.storage.Blob;
 
+import br.com.sharebox.exception.CustomException;
 import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.repository.ArquivoRepository;
 
@@ -24,9 +25,13 @@ public class ArquivoService {
 		return this.arquivoRepository.listar();
 	}
 
-	public void upload(MultipartFile[] files) throws InterruptedException, ExecutionException {
-		for (MultipartFile file : files) {
-			this.arquivoRepository.upload(file, file.getOriginalFilename());
+	public void upload(MultipartFile[] files) {
+		try {
+			for (MultipartFile file : files) {
+				this.arquivoRepository.upload(file, file.getOriginalFilename());
+			}
+		} catch (Exception ex) {
+			throw new CustomException(ex.getMessage());
 		}
 	}
 
