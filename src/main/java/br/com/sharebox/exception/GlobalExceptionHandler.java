@@ -22,4 +22,11 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	// Trata erros inesperados (genéricos)
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> handleGenericException(Exception ex) {
+		ex.printStackTrace();
+		return new ResponseEntity<>("Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
+				HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 }

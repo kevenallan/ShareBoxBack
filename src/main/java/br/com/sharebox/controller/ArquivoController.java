@@ -41,9 +41,9 @@ public class ArquivoController {
 
 	@Autowired
 	private ArquivoService arquivoService;
-	
+
 	@Value("${link.back}")
-    private String linkBack;
+	private String linkBack;
 
 	@GetMapping("/listar")
 	public ResponseEntity<ResponseModel<?>> listar() throws FileNotFoundException, IOException {
@@ -58,7 +58,6 @@ public class ArquivoController {
 		return new ResponseEntity<>(new ResponseModel<>("Arquivo(s) adicionado(s)", null), HttpStatus.OK);
 	}
 
-	// PRECISA MUDAR PARA RESPONSEMODEL?
 	@GetMapping("/download")
 	public ResponseEntity<byte[]> downloadFile(@RequestParam("nomeArquivo") String nomeArquivo)
 			throws FileNotFoundException, IOException {
@@ -79,7 +78,6 @@ public class ArquivoController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	// PRECISA MUDAR PARA RESPONSEMODEL?
 	@GetMapping("/buscar")
 	public ResponseEntity<byte[]> buscarArquivo(@RequestParam("nomeArquivo") String nomeArquivo)
 			throws FileNotFoundException, IOException {
@@ -94,53 +92,51 @@ public class ArquivoController {
 		ResponseModel<?> response = new ResponseModel<>("Arquivo(s) deletado(s) com sucesso.", null);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
-	 // Rota para fazer o upload do arquivo ZIP
-    @PostMapping("/upload-zip-link")
-    public ResponseEntity<ResponseModel<?>> uploadZip(@RequestParam("file") MultipartFile file) {
-        try {
-        	String nomeZip = "sharebox-" + UUID.randomUUID() + ".zip";
-            // Cria um diretório temporário
-            Path tempDir = Files.createTempDirectory("zipTemp");
-            Path tempFile = tempDir.resolve(nomeZip);
 
-            // Salva o arquivo ZIP no diretório temporário
-            Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
+	// Rota para fazer o upload do arquivo ZIP
+	@PostMapping("/upload-zip-link")
+	public ResponseEntity<ResponseModel<?>> uploadZip(@RequestParam("file") MultipartFile file) {
+		try {
+			String nomeZip = "sharebox-" + UUID.randomUUID() + ".zip";
+			// Cria um diretório temporário
+			Path tempDir = Files.createTempDirectory("shraboxZipTemp");
+			Path tempFile = tempDir.resolve(nomeZip);
 
-            // Gera o link de download
-            String downloadUrl = linkBack + "/arquivo/download-link?fileName=" + nomeZip;
+			// Salva o arquivo ZIP no diretório temporário
+			Files.copy(file.getInputStream(), tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-            // Retorna o link para ser compartilhado
-            ResponseModel<?> response = new ResponseModel<>("Link copiado com sucesso", downloadUrl);
-    		return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
+			// Gera o link de download
+			String downloadUrl = linkBack + "/arquivo/download-link?fileName=" + nomeZip;
 
-    // Rota para download do arquivo ZIP
-    @GetMapping("/download-link")
-    public ResponseEntity<Resource> downloadZip(@RequestParam("fileName") String filename) throws IOException {
-        try {
-            // Localiza o arquivo no diretório temporário
-        	Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
-        	try (DirectoryStream<Path> stream = Files.newDirectoryStream(tempDir, "zipTemp*")) {
-                for (Path dir : stream) {
-                    Path targetFile = dir.resolve(filename);
-                    if (Files.exists(targetFile)) {
-                    	  Resource resource = new UrlResource(targetFile.toUri());
-                    	 return ResponseEntity.ok()
-                                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                                 .body(resource);
-                    }
-                }
-            }
-        	throw new CustomException("Arquivo indisponível.");
-               
-        } catch (MalformedURLException e) {
-        	throw new CustomException("Url do arquivo inválida.");
-        }
-    }
+			// Retorna o link para ser compartilhado
+			ResponseModel<?> response = new ResponseModel<>("Link copiado com sucesso", downloadUrl);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
 
-    
+	// Rota para download do arquivo ZIP
+	@GetMapping("/download-link")
+	public ResponseEntity<Resource> downloadZip(@RequestParam("fileName") String filename) throws IOException {
+		try {
+			// Localiza o arquivo no diretório temporário
+			Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+			try (DirectoryStream<Path> stream = Files.newDirectoryStream(tempDir, "shraboxZipTemp*")) {
+				for (Path dir : stream) {
+					Path targetFile = dir.resolve(filename);
+					if (Files.exists(targetFile)) {
+						Resource resource = new UrlResource(targetFile.toUri());
+						return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+								"attachment; filename=\"" + resource.getFilename() + "\"").body(resource);
+					}
+				}
+			}
+			throw new CustomException("Arquivo indisponível.");
+
+		} catch (MalformedURLException e) {
+			throw new CustomException("Link inválida, solicite um novo link.");
+		}
+	}
+
 }

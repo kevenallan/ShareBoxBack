@@ -42,7 +42,8 @@ public class SecurityConfig {
 			return corsConfiguration;
 		})).authorizeHttpRequests(auth -> auth
 				.requestMatchers("/usuario/login", "/usuario/cadastrar", "/usuario/esqueceu-sua-senha",
-						"/usuario/alterar-senha", "/firebase/get-config", "/usuario/login-google", "/arquivo/download-link")
+						"/usuario/alterar-senha", "/firebase/get-config", "/usuario/login-google",
+						"/arquivo/download-link")
 				.permitAll() // Permite acesso sem autenticação
 				.anyRequest().authenticated() // Requer autenticação para qualquer outra requisição
 		).addFilterBefore(tokenInterceptorFilter, UsernamePasswordAuthenticationFilter.class); // Adiciona o filtro de
