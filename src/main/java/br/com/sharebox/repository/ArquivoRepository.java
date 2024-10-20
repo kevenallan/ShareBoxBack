@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -89,6 +90,7 @@ public class ArquivoRepository extends Repository {
 
 				arquivoList.add(arquivo);
 			}
+			arquivoList.sort(Comparator.comparing(ArquivoModel::getDataCriacao).reversed());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
