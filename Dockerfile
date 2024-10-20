@@ -14,6 +14,6 @@ ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
 
-COPY --from=build /target/sharebox-3.0.1.jar app.jar
+COPY --from=build /target/sharebox-4.0.0.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
