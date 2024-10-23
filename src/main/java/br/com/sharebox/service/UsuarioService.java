@@ -2,6 +2,8 @@ package br.com.sharebox.service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +107,18 @@ public class UsuarioService {
 		// DELETAR ARQUIVOS DO USUÁRIO
 		this.usuarioRepository.deletarUsuarioPorId(this.authService.uuidUsuarioLogado);
 		this.arquivoService.deletarPasta(this.authService.uuidUsuarioLogado);
+	}
+
+	public void compartilharArquivos(String email, List<String> nomeArquivos) throws Exception {
+		UsuarioModel usuario = this.usuarioRepository.buscarUsuarioPorEmail(email);
+		List<String> pathArquivos = new ArrayList<>();
+		nomeArquivos.forEach(nomeArquivo -> pathArquivos.add(usuario.getId() + "/" + nomeArquivo));
+		if (usuario.getArquivosCompartilhados() == null || usuario.getArquivosCompartilhados().isEmpty()) {
+			usuario.setArquivosCompartilhados(pathArquivos);
+		} else {
+			pathArquivos.forEach(nomeArquivo -> usuario.getArquivosCompartilhados().add(nomeArquivo));
+		}
+		this.usuarioRepository.compartilharArquivos(usuario);
 	}
 
 }

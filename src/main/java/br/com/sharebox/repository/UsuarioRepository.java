@@ -297,4 +297,22 @@ public class UsuarioRepository extends Repository {
 		return usuarioModel;
 	}
 
+	public void compartilharArquivos(UsuarioModel usuarioAtualizado) throws Exception {
+		Firestore dbFirestore = getConectionFirestoreDataBase();
+
+		DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(usuarioAtualizado.getId());
+
+		DocumentSnapshot documentSnapshot = docRef.get().get();
+		if (documentSnapshot.exists()) {
+
+			ApiFuture<WriteResult> futureUpdate = null;
+
+			futureUpdate = docRef.update("arquivosCompartilhados", usuarioAtualizado.getArquivosCompartilhados());
+
+			futureUpdate.get(); // Aguardar a conclusão da atualização
+		} else {
+			throw new CustomException("Erro na atualização do usuário.");
+		}
+	}
+
 }

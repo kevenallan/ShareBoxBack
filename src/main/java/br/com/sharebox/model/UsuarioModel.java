@@ -1,5 +1,7 @@
 package br.com.sharebox.model;
 
+import java.util.List;
+
 import com.google.cloud.firestore.annotation.Exclude;
 
 import lombok.Data;
@@ -13,5 +15,7 @@ public class UsuarioModel {
 	private String email;
 	private String usuario;
 	private String senha;
+
+	private List<String> arquivosCompartilhados;
 
 }
