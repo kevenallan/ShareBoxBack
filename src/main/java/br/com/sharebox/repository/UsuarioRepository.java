@@ -1,5 +1,14 @@
 package br.com.sharebox.repository;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.ReadChannel;
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
@@ -18,9 +28,14 @@ import com.google.cloud.firestore.Query;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.cloud.firestore.WriteResult;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
 
 import br.com.sharebox.exception.CustomException;
+import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.model.UsuarioModel;
+import br.com.sharebox.service.FirebaseService;
 
 @Component
 public class UsuarioRepository extends Repository {
@@ -29,6 +44,9 @@ public class UsuarioRepository extends Repository {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+
+	@Autowired
+	private FirebaseService firebaseService;
 
 	// Método para salvar um usuário no Firestore
 	public UsuarioModel cadastrar(UsuarioModel usuarioModel) throws Exception {
@@ -295,6 +313,119 @@ public class UsuarioRepository extends Repository {
 		UsuarioModel usuarioModel = documentSnapshot.toObject(UsuarioModel.class);
 		usuarioModel.setId(documentSnapshot.getId());
 		return usuarioModel;
+	}
+
+	public void compartilharArquivos(UsuarioModel usuarioAtualizado) throws Exception {
+		Firestore dbFirestore = getConectionFirestoreDataBase();
+
+		DocumentReference docRef = dbFirestore.collection(COLLECTION_USUARIO).document(usuarioAtualizado.getId());
+
+		DocumentSnapshot documentSnapshot = docRef.get().get();
+		if (documentSnapshot.exists()) {
+
+			ApiFuture<WriteResult> futureUpdate = null;
+
+			futureUpdate = docRef.update("arquivosCompartilhados", usuarioAtualizado.getArquivosCompartilhados());
+
+			futureUpdate.get(); // Aguardar a conclusão da atualização
+		} else {
+			throw new CustomException("Erro na atualização do usuário.");
+		}
+	}
+
+	public List<ArquivoModel> listarArquivosCompartilhados(String documentId) throws Exception {
+		UsuarioModel usuario = this.getDadosUsuario(documentId);
+		List<BlobId> listaBlobId = new ArrayList<>();
+
+		if (usuario.getArquivosCompartilhados() == null || usuario.getArquivosCompartilhados().isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		usuario.getArquivosCompartilhados()
+				.forEach(arquivo -> listaBlobId.add(BlobId.of(this.firebaseService.getBucketName(), arquivo)));
+
+		Storage storage = this.firebaseService.initStorage();
+		List<Blob> lista = storage.get(listaBlobId);
+
+		List<ArquivoModel> resultado = this.converterParaArquivoModel(lista);
+
+		this.removerArquivoCompartilhadosNaoEncontrados(usuario, resultado);
+
+		return resultado;
+	}
+
+	private List<ArquivoModel> converterParaArquivoModel(List<Blob> lista) {
+		List<ArquivoModel> arquivoList = new ArrayList<>();
+		try {
+			for (Blob blob : lista) {
+				if (blob == null) {
+					continue;
+				}
+				ArquivoModel arquivo = new ArquivoModel();
+				String nome = blob.getName().split("/")[1];
+				String[] nomeExtensao = nome.split("\\.");
+				int indicePontoExtensao = nome.lastIndexOf(".");
+				String nomeArquivo = nome.substring(0, indicePontoExtensao);
+
+				arquivo.setPathArquivo(blob.getName());
+				arquivo.setNome(nomeArquivo);
+				arquivo.setExtensao(nomeExtensao[nomeExtensao.length - 1]);
+				arquivo.setMimeType(blob.getContentType());
+
+				String tamanhoFormatado = formatarTamanhoArquivo(blob.getSize());
+				arquivo.setTamanho(tamanhoFormatado);
+
+				arquivo.setDataCriacao(
+						LocalDateTime.ofInstant(Instant.ofEpochMilli(blob.getCreateTime()), ZoneId.systemDefault()));
+
+				try (ReadChannel reader = blob.reader()) {
+					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+					WritableByteChannel channel = Channels.newChannel(outputStream);
+					ByteBuffer buffer = ByteBuffer.allocate(64 * 1024); // 64KB por buffer
+
+					while (reader.read(buffer) > 0) {
+						buffer.flip();
+						channel.write(buffer);
+						buffer.clear();
+					}
+					// Processar os bytes como necessário
+					byte[] fileBytes = outputStream.toByteArray();
+					arquivo.setBytes(fileBytes);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				arquivoList.add(arquivo);
+			}
+			arquivoList.sort(Comparator.comparing(ArquivoModel::getDataCriacao).reversed());
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return arquivoList;
+	}
+
+	public String formatarTamanhoArquivo(long tamanhoEmBytes) {
+		if (tamanhoEmBytes < 1024) {
+			return tamanhoEmBytes + " B";
+		} else if (tamanhoEmBytes < 1024 * 1024) {
+			return String.format("%.1f KB", tamanhoEmBytes / 1024.0);
+		} else if (tamanhoEmBytes < 1024 * 1024 * 1024) {
+			return String.format("%.1f MB", tamanhoEmBytes / (1024.0 * 1024));
+		} else {
+			return String.format("%.1f GB", tamanhoEmBytes / (1024.0 * 1024 * 1024));
+		}
+	}
+
+	public void removerArquivoCompartilhadosNaoEncontrados(UsuarioModel usuario, List<ArquivoModel> arquivoList)
+			throws Exception {
+		List<String> pathArquivoList = new ArrayList<>();
+		arquivoList.forEach(arquivo -> pathArquivoList.add(arquivo.getPathArquivo()));
+
+		usuario.getArquivosCompartilhados().removeIf(pathArquivo -> {
+			boolean naoEncontrado = !pathArquivoList.contains(pathArquivo);
+			return naoEncontrado;
+		});
+		this.compartilharArquivos(usuario);
 	}
 
 }

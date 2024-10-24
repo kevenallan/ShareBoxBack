@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -89,6 +90,7 @@ public class ArquivoRepository extends Repository {
 
 				arquivoList.add(arquivo);
 			}
+			arquivoList.sort(Comparator.comparing(ArquivoModel::getDataCriacao).reversed());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -127,8 +129,14 @@ public class ArquivoRepository extends Repository {
 
 	public Blob getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
 		Storage storage = this.firebaseService.initStorage();
-		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(),
-				this.authService.uuidUsuarioLogado + "/" + nomeArquivo));
+		String pathArquivo;
+		if (nomeArquivo.contains("/")) {
+			pathArquivo = nomeArquivo;
+		} else {
+			pathArquivo = this.authService.uuidUsuarioLogado + "/" + nomeArquivo;
+		}
+
+		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(), pathArquivo));
 		return blob;
 	}
 

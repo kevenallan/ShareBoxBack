@@ -2,6 +2,8 @@ package br.com.sharebox.service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 
 import br.com.sharebox.dto.LoginDTO;
 import br.com.sharebox.exception.CustomException;
+import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.model.UsuarioModel;
 import br.com.sharebox.repository.UsuarioRepository;
 
@@ -105,6 +108,22 @@ public class UsuarioService {
 		// DELETAR ARQUIVOS DO USUÁRIO
 		this.usuarioRepository.deletarUsuarioPorId(this.authService.uuidUsuarioLogado);
 		this.arquivoService.deletarPasta(this.authService.uuidUsuarioLogado);
+	}
+
+	public void compartilharArquivos(String email, List<String> nomeArquivos) throws Exception {
+		UsuarioModel usuario = this.usuarioRepository.buscarUsuarioPorEmail(email);
+		List<String> pathArquivos = new ArrayList<>();
+		nomeArquivos.forEach(nomeArquivo -> pathArquivos.add(this.authService.uuidUsuarioLogado + "/" + nomeArquivo));
+		if (usuario.getArquivosCompartilhados() == null || usuario.getArquivosCompartilhados().isEmpty()) {
+			usuario.setArquivosCompartilhados(pathArquivos);
+		} else {
+			pathArquivos.forEach(nomeArquivo -> usuario.getArquivosCompartilhados().add(nomeArquivo));
+		}
+		this.usuarioRepository.compartilharArquivos(usuario);
+	}
+
+	public List<ArquivoModel> listarArquivosCompartilhados() throws Exception {
+		return this.usuarioRepository.listarArquivosCompartilhados(this.authService.uuidUsuarioLogado);
 	}
 
 }

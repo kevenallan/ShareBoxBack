@@ -1,5 +1,6 @@
 package br.com.sharebox.controller;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.sharebox.dto.LoginDTO;
+import br.com.sharebox.model.ArquivoModel;
 import br.com.sharebox.model.ResponseModel;
 import br.com.sharebox.model.UsuarioModel;
 import br.com.sharebox.service.UsuarioService;
@@ -97,6 +99,21 @@ public class UsuarioController {
 	public ResponseEntity<ResponseModel<?>> deletar() throws Exception {
 		this.usuarioService.deletarUsuarioPorId();
 		ResponseModel<?> response = new ResponseModel<>("Usuário deletado com sucesso", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/compartilhar-arquivos")
+	public ResponseEntity<ResponseModel<?>> compartilharArquivos(@RequestParam("email") String email,
+			@RequestParam("arquivos") List<String> arquivos) throws Exception {
+		this.usuarioService.compartilharArquivos(email, arquivos);
+		ResponseModel<?> response = new ResponseModel<>("Arquivo(s) compartilhado(s) com sucesso", null);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("/listar-arquivos-compartilhados")
+	public ResponseEntity<ResponseModel<?>> listarArquivosCompartilhados() throws Exception {
+		List<ArquivoModel> lista = this.usuarioService.listarArquivosCompartilhados();
+		ResponseModel<?> response = new ResponseModel<>(null, lista);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }
