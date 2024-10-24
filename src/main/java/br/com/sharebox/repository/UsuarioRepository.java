@@ -347,13 +347,20 @@ public class UsuarioRepository extends Repository {
 		Storage storage = this.firebaseService.initStorage();
 		List<Blob> lista = storage.get(listaBlobId);
 
-		return this.converterParaArquivoModel(lista);
+		List<ArquivoModel> resultado = this.converterParaArquivoModel(lista);
+
+		this.removerArquivoCompartilhadosNaoEncontrados(usuario, resultado);
+
+		return resultado;
 	}
 
 	private List<ArquivoModel> converterParaArquivoModel(List<Blob> lista) {
 		List<ArquivoModel> arquivoList = new ArrayList<>();
 		try {
 			for (Blob blob : lista) {
+				if (blob == null) {
+					continue;
+				}
 				ArquivoModel arquivo = new ArquivoModel();
 				String nome = blob.getName().split("/")[1];
 				String[] nomeExtensao = nome.split("\\.");
@@ -407,6 +414,18 @@ public class UsuarioRepository extends Repository {
 		} else {
 			return String.format("%.1f GB", tamanhoEmBytes / (1024.0 * 1024 * 1024));
 		}
+	}
+
+	public void removerArquivoCompartilhadosNaoEncontrados(UsuarioModel usuario, List<ArquivoModel> arquivoList)
+			throws Exception {
+		List<String> pathArquivoList = new ArrayList<>();
+		arquivoList.forEach(arquivo -> pathArquivoList.add(arquivo.getPathArquivo()));
+
+		usuario.getArquivosCompartilhados().removeIf(pathArquivo -> {
+			boolean naoEncontrado = !pathArquivoList.contains(pathArquivo);
+			return naoEncontrado;
+		});
+		this.compartilharArquivos(usuario);
 	}
 
 }
