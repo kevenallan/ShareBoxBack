@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class ArquivoModel {
-	
+
 	private String nome;
 	private MultipartFile file;
 	private String extensao;
@@ -17,5 +17,6 @@ public class ArquivoModel {
 	private String base64;
 	private byte[] bytes;
 	private LocalDateTime dataCriacao;
+	private String pathArquivo;
 
 }

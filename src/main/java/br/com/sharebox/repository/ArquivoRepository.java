@@ -129,8 +129,14 @@ public class ArquivoRepository extends Repository {
 
 	public Blob getArquivo(String nomeArquivo) throws FileNotFoundException, IOException {
 		Storage storage = this.firebaseService.initStorage();
-		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(),
-				this.authService.uuidUsuarioLogado + "/" + nomeArquivo));
+		String pathArquivo;
+		if (nomeArquivo.contains("/")) {
+			pathArquivo = nomeArquivo;
+		} else {
+			pathArquivo = this.authService.uuidUsuarioLogado + "/" + nomeArquivo;
+		}
+
+		Blob blob = storage.get(BlobId.of(this.firebaseService.getBucketName(), pathArquivo));
 		return blob;
 	}
 

@@ -360,6 +360,7 @@ public class UsuarioRepository extends Repository {
 				int indicePontoExtensao = nome.lastIndexOf(".");
 				String nomeArquivo = nome.substring(0, indicePontoExtensao);
 
+				arquivo.setPathArquivo(blob.getName());
 				arquivo.setNome(nomeArquivo);
 				arquivo.setExtensao(nomeExtensao[nomeExtensao.length - 1]);
 				arquivo.setMimeType(blob.getContentType());
