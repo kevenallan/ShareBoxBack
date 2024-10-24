@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>br.com</groupId>
 	<artifactId>sharebox</artifactId>
-	<version>4.0.0</version>
+	<version>5.0.0</version>
 	<name>sharebox</name>
 	<description>sharebox</description>
 	<url/>
